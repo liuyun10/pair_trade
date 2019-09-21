@@ -5,12 +5,12 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import matplotlib.pyplot as plt
 from operator import itemgetter
-import shutil
+import shutil,numpy
 from time import gmtime, strftime
 
 pd.set_option('display.max_columns', None)
 
-data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
+data_dir='G:\Stock\pairs_trade\pair_trade\\test'
 report_dir='result'
 corr_result_file_name='corr.csv'
 report_file_name='report'
@@ -71,7 +71,6 @@ def calculate_spread_zscore(pairs, symbol1, symbol2):
     pairs['saya_divide_std'] = (pd.Series(pairs['saya_divide'])).rolling(window=MEAN_WINDOW, center=False).std(ddof=0)
     pairs['saya_divide_sigma'] = (pairs['saya_divide'] - pairs['saya_divide_mean']) / pairs['saya_divide_std']
     pairs['deviation_rate(%)'] = round((pairs['saya_divide'] - pairs['saya_divide_mean']) / pairs['saya_divide'] *100,2)
-
 
     return pairs
 
@@ -162,6 +161,173 @@ def clean_result_dir():
 
     os.makedirs(result_dir)
 
+def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
+    pairs['axis_A_long']= (pairs['saya_divide_sigma'] <= -z_entry_threshold) *1.0
+    pairs['axis_A_short'] = (pairs['saya_divide_sigma'] >= z_entry_threshold) * 1.0
+    pairs['axis_A_exit_long'] = (pairs['saya_divide_sigma'] >= -1 * z_exit_threshold1) * 1.0
+    pairs['axis_A_exit_short'] = (pairs['saya_divide_sigma'] <= z_exit_threshold1) * 1.0
+
+    pairs = pairs.sort_values('DATE', ascending=True)
+
+    position ={}
+    portfolio_list = []
+    last_row_index=''
+    haveUnsettledPostion=False
+
+    for index, row in pairs.iterrows():
+
+        if numpy.isnan(row['saya_divide_sigma']):
+            last_row_index = index
+            continue
+
+        OPEN_CAT=''
+        CLOSE_CAT=''
+
+        if haveUnsettledPostion:
+            _cat = position['OPEN_CAT']
+            open_days = int((index-position['OPEN_DATE']) / np.timedelta64(1, 'D'))
+
+            if 'BUY' == _cat and pairs.at[last_row_index, 'axis_A_exit_long'] == 1:
+                CLOSE_CAT = 'CLOSE_BUY'
+            elif 'SELL' == _cat and pairs.at[last_row_index, 'axis_A_exit_short'] ==1:
+                CLOSE_CAT = 'CLOSE_SELL'
+            elif open_days > entry_max_days: # Stop Loss
+                CLOSE_CAT = 'SL_MAX_DAY_OVER'
+
+            if len(CLOSE_CAT) > 0:
+                axisClosePrice = row['OPEN_'+ symbol_Axis]
+                pairClosePrice = row['OPEN_' + symbol_Pair]
+
+                position['CLOSE_DATE'] = index
+
+                position['OPEN_DAYS'] = open_days
+                position['CLOSE_CAT'] = CLOSE_CAT
+                position['AXIS_SYMB_CLOSE_PRI'] = axisClosePrice
+                position['PAIR_SYMB_CLOSE_PRI'] = pairClosePrice
+
+                axis_lot_size = position['AXIS_SYMB_LOT']
+                pair_lot_size = position['PAIR_SYMB_LOT']
+                position['AXIS_CLOSE_MOUNT'] = axisClosePrice*axis_lot_size
+                position['PAIR_CLOSE_MOUNT'] = pairClosePrice * pair_lot_size
+
+                axisOpenPrice = position['AXIS_SYMB_OPEN_PRI']
+                pairOpenPrice = position['PAIR_SYMB_OPEN_PRI']
+
+                haveUnsettledPostion = False
+
+                if  CLOSE_CAT == 'CLOSE_BUY' or (CLOSE_CAT == 'SL_MAX_DAY_OVER' and 'BUY'==_cat):
+                    total = (axisClosePrice - axisOpenPrice) * axis_lot_size + (pairOpenPrice - pairClosePrice) * pair_lot_size
+                elif CLOSE_CAT == 'CLOSE_SELL' or (CLOSE_CAT == 'SL_MAX_DAY_OVER' and 'SELL'==_cat):
+                    total = (axisOpenPrice - axisClosePrice) * axis_lot_size + (pairClosePrice - pairOpenPrice) * pair_lot_size
+
+                position['TOTAL'] = total
+                trade_commission = get_trade_commission(axisOpenPrice,pairOpenPrice, axis_lot_size,pair_lot_size)
+                position['COMMISSION_N'] = trade_commission
+                credit_commission=get_credit_commission(axisOpenPrice,pairOpenPrice,axis_lot_size,pair_lot_size,open_days)
+                position['COMMISSION_CREDIT'] = credit_commission
+
+                profit = total - trade_commission - credit_commission
+                position['PROFIT'] = profit
+
+                pl = round(profit / (position['AXIS_OPEN_MOUNT'] + position['PAIR_OPEN_MOUNT'])*100,2)
+                position['PL'] = pl
+
+                #print(portfolio_list)
+                portfolio_list.append(position)
+
+        else:
+
+            if pairs.at[last_row_index, 'axis_A_long'] == 1:
+                OPEN_CAT = 'BUY' # BUY AXIS COMBOL
+
+            elif pairs.at[last_row_index, 'axis_A_short'] == 1:
+                OPEN_CAT = 'SELL'
+
+            if len(OPEN_CAT) > 0:
+
+                sigma = round(pairs.at[last_row_index, 'saya_divide_sigma'],2)
+                haveUnsettledPostion = True
+                axisOpenPrice = row['OPEN_' + symbol_Axis]
+                pairOpenPrice = row['OPEN_' + symbol_Pair]
+                axis_lot_size,pair_lot_size,lot_size_diff = get_lot_size(axisOpenPrice, pairOpenPrice)
+
+                position = {'AXIS_SYMBOL': symbol_Axis, 'PAIR_SYMBOL': symbol_Pair, 'OPEN_DATE': index,
+                            'SIGMA':sigma, 'OPEN_CAT':OPEN_CAT,"AXIS_SYMB_OPEN_PRI":axisOpenPrice,
+                            'AXIS_SYMB_LOT':axis_lot_size, 'AXIS_OPEN_MOUNT':axisOpenPrice*axis_lot_size,
+                            'PAIR_SYMB_OPEN_PRI':pairOpenPrice,'PAIR_SYMB_LOT':pair_lot_size,
+                            'PAIR_OPEN_MOUNT':pairOpenPrice*pair_lot_size,'LOT_DIFF(%)':lot_size_diff,}
+
+        last_row_index = index
+
+    pd_portfolio_list = pd.DataFrame(portfolio_list)
+    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, 'portfolio.csv'), encoding=FILE_ENCODING)
+
+def get_lot_size(axisPrice, pairPrice):
+    min_lot_size = 100
+    maxMount = 500000
+    mixMount = 100000
+
+    unit_axis_lot_size = min_lot_size
+    unit_pair_lot_size = min_lot_size
+
+    if axisPrice > pairPrice:
+        ratio = round(axisPrice / pairPrice)
+        unit_pair_lot_size = min_lot_size * ratio
+
+    else:
+        ratio = round(pairPrice / axisPrice)
+        unit_axis_lot_size = min_lot_size * ratio
+
+    axis_lot_size = unit_axis_lot_size
+    pair_lot_size = unit_pair_lot_size
+
+    while True:
+
+        if axis_lot_size * axisPrice < maxMount and pair_lot_size * pairPrice < maxMount:
+            axis_lot_size = axis_lot_size + unit_axis_lot_size
+            pair_lot_size = pair_lot_size + unit_pair_lot_size
+
+        else:
+            if axis_lot_size != unit_axis_lot_size or pair_lot_size != unit_pair_lot_size:
+                axis_lot_size = axis_lot_size - unit_axis_lot_size
+                pair_lot_size = pair_lot_size - unit_pair_lot_size
+            break
+    lot_diff = np.abs(
+        round((axis_lot_size * axisPrice - pair_lot_size * pairPrice) / (axis_lot_size * axisPrice) * 100, 2))
+
+    return axis_lot_size, pair_lot_size, lot_diff
+
+def get_trade_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size):
+
+    consumtion_tax_ration = 0.1
+    axia_total = axisPrice * axis_lot_size
+
+    if axia_total > 500000:
+        axis_commission = 350
+    else:
+        axis_commission =180
+
+    pair_total = pairPrice * pair_lot_size
+    if pair_total > 500000:
+        pair_commission = 350
+    else:
+        pair_commission =180
+
+    axis_commission = axis_commission*2*(1+consumtion_tax_ration)
+    pair_commission = pair_commission*2*(1+consumtion_tax_ration)
+
+    return axis_commission + pair_commission
+
+def get_credit_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size, open_days):
+
+    credit_rate=0.03
+
+    axis_comm = axisPrice * axis_lot_size * credit_rate /365 * open_days
+    pair_comm = pairPrice * pair_lot_size * credit_rate / 365 * open_days
+
+    total = round(axis_comm + pair_comm)
+    return total
+
 if __name__ == '__main__':
     print('maint start ' + strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -210,6 +376,8 @@ if __name__ == '__main__':
 
     output_report()
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
+
+    signal_generate(_pairs, '4182','7278')
 
     #print chart
     # pairs_one_year = pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
