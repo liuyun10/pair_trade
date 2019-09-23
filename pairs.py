@@ -10,7 +10,7 @@ from time import gmtime, strftime
 
 pd.set_option('display.max_columns', None)
 
-data_dir='G:\Stock\pairs_trade\pair_trade\\test'
+data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
 report_dir='result'
 corr_result_file_name='corr.csv'
 report_file_name='report'
@@ -98,6 +98,7 @@ def print_chart(pairs, symbol1, symbol2):
 
 def output_report():
 
+    print('Output Report Processing...')
     timestr = time.strftime("%Y%m%d-%H%M%S")
     report_file = os.path.join(data_dir, report_dir, corr_result_file_name + '_' + timestr + '.xlsx')
 
@@ -151,6 +152,8 @@ def output_report():
 
     writer.save()
     writer.close()
+
+    print('Output Report Process end!')
 
 def clean_result_dir():
 
@@ -377,7 +380,7 @@ if __name__ == '__main__':
     output_report()
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
 
-    signal_generate(_pairs, '4182','7278')
+    # signal_generate(_pairs, '9064','9505')
 
     #print chart
     # pairs_one_year = pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
