@@ -10,7 +10,8 @@ from time import gmtime, strftime
 
 pd.set_option('display.max_columns', None)
 
-data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
+# data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
+data_dir='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
 report_dir='result'
 corr_result_file_name='corr.csv'
 report_file_name='report'
@@ -111,6 +112,9 @@ def output_report():
     CLOSE_B_list = []
     SIGMA=[]
     DEV_RATE=[]
+    AXIS_LOT_SIZE=[]
+    PAIR_LOT_SIZE = []
+    LOT_SIZE_DIFF= []
 
     with pd.ExcelWriter(report_file) as writer:
         for index, row in corr_df.iterrows():
@@ -118,6 +122,10 @@ def output_report():
             symblA = str(int(row.SYM_A))
             symblB = str(int(row.SYM_B))
             #print('symblA=%s symblB=%s' % (symblA,symblB))
+
+            # if row.CORR_3M < CORR_THRE_SHOLD_THREE_MONTH or row.CORR_1Y < CORR_THRE_SHOLD_ONE_YEAR:
+                # break
+
             try:
                 _file = os.path.join(data_dir, report_dir, symblA + '_' + symblB + '.csv')
                 _df = pd.read_csv(_file, encoding=FILE_ENCODING)
@@ -128,6 +136,12 @@ def output_report():
                 CLOSE_B_list.append(_df['CLOSE_' + symblB][0])
                 SIGMA.append(_df['saya_divide_sigma'][0])
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
+
+                axis_lot_size, pair_lot_size, lot_size_diff = get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
+                print(axis_lot_size)
+                AXIS_LOT_SIZE.append(axis_lot_size)
+                PAIR_LOT_SIZE.append(pair_lot_size)
+                LOT_SIZE_DIFF.append(lot_size_diff)
 
                 #print(_df)
                 signal_generate(_df, symblA, symblB)
@@ -142,10 +156,14 @@ def output_report():
                 CLOSE_B_list.append(0)
                 SIGMA.append(0)
                 DEV_RATE.append(0)
+                AXIS_LOT_SIZE.append(0)
+                PAIR_LOT_SIZE.append(0)
+                LOT_SIZE_DIFF.append(0)
                 continue
 
         corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
-                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,DEV_RATE=DEV_RATE)
+                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,DEV_RATE=DEV_RATE,
+                                         AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,LOT_SIZE_DIFF=LOT_SIZE_DIFF)
         #print(corr_df_new)
         corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
         corr_df_new = corr_df_new.sort_values('ABS_SIGMA', ascending=False)
@@ -167,7 +185,7 @@ def clean_result_dir():
 
     os.makedirs(result_dir)
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
+def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
 
     pairs = pairs.sort_values('DATE', ascending=True)
     pairs['DATE'] = pd.to_datetime(pairs['DATE'])
@@ -273,11 +291,12 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_ex
         last_row_index = index
 
     pd_portfolio_list = pd.DataFrame(portfolio_list)
-    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + 'portfolio.csv'), encoding=FILE_ENCODING)
+    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'), encoding=FILE_ENCODING)
 
 def get_lot_size(axisPrice, pairPrice):
+    # 3475 1401 200 500
     min_lot_size = 100
-    maxMount = 500000
+    maxMount = 1000000
     mixMount = 100000
 
     unit_axis_lot_size = min_lot_size
