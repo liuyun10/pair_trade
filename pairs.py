@@ -129,6 +129,9 @@ def output_report():
                 SIGMA.append(_df['saya_divide_sigma'][0])
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
 
+                #print(_df)
+                signal_generate(_df, symblA, symblB)
+
                 path, ext = os.path.splitext(os.path.basename(_file))
                 #_df.to_excel(writer, sheet_name=path)
 
@@ -165,12 +168,18 @@ def clean_result_dir():
     os.makedirs(result_dir)
 
 def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
+
+    pairs = pairs.sort_values('DATE', ascending=True)
+    pairs['DATE'] = pd.to_datetime(pairs['DATE'])
+    pairs.index = pairs['DATE']
+
     pairs['axis_A_long']= (pairs['saya_divide_sigma'] <= -z_entry_threshold) *1.0
     pairs['axis_A_short'] = (pairs['saya_divide_sigma'] >= z_entry_threshold) * 1.0
     pairs['axis_A_exit_long'] = (pairs['saya_divide_sigma'] >= -1 * z_exit_threshold1) * 1.0
     pairs['axis_A_exit_short'] = (pairs['saya_divide_sigma'] <= z_exit_threshold1) * 1.0
 
-    pairs = pairs.sort_values('DATE', ascending=True)
+    #pairs = pairs.sort_values('DATE', ascending=True)
+    #print(pairs)
 
     position ={}
     portfolio_list = []
@@ -187,9 +196,10 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_ex
         CLOSE_CAT=''
 
         if haveUnsettledPostion:
+            #print(position)
             _cat = position['OPEN_CAT']
-            open_days = int((index-position['OPEN_DATE']) / np.timedelta64(1, 'D'))
 
+            open_days = int((index-position['OPEN_DATE']) / np.timedelta64(1, 'D'))
             if 'BUY' == _cat and pairs.at[last_row_index, 'axis_A_exit_long'] == 1:
                 CLOSE_CAT = 'CLOSE_BUY'
             elif 'SELL' == _cat and pairs.at[last_row_index, 'axis_A_exit_short'] ==1:
@@ -263,7 +273,7 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=1.8, z_ex
         last_row_index = index
 
     pd_portfolio_list = pd.DataFrame(portfolio_list)
-    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, 'portfolio.csv'), encoding=FILE_ENCODING)
+    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + 'portfolio.csv'), encoding=FILE_ENCODING)
 
 def get_lot_size(axisPrice, pairPrice):
     min_lot_size = 100
