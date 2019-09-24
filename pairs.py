@@ -1,11 +1,11 @@
 import pandas as pd
 import numpy as np
-import glob, copy, os.path, time
+import glob, os.path, time, numpy
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from operator import itemgetter
-import shutil,numpy
-from time import gmtime, strftime
+from time import strftime
+
 import tradeutil as trade_util
 import fileutil as file_util
 
@@ -154,8 +154,6 @@ def output_report():
     writer.close()
 
     print('Output Report Process end!')
-
-
 
 def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
 
