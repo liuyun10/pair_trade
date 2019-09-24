@@ -90,10 +90,19 @@ def output_report():
     OPEN_B_list = []
     CLOSE_B_list = []
     SIGMA=[]
+    ABS_SIGMA = []
     DEV_RATE=[]
     AXIS_LOT_SIZE=[]
     PAIR_LOT_SIZE = []
     LOT_SIZE_DIFF= []
+
+    total_profit_list=[]
+    average_profit_list = []
+    average_plt_list= []
+    total_times_list=[]
+    plus_times_list = []
+    minus_times_list= []
+    pl_times_list= []
 
     with pd.ExcelWriter(report_file) as writer:
         for index, row in corr_df.iterrows():
@@ -114,6 +123,7 @@ def output_report():
                 OPEN_B_list.append(_df['OPEN_' + symblB][0])
                 CLOSE_B_list.append(_df['CLOSE_' + symblB][0])
                 SIGMA.append(_df['saya_divide_sigma'][0])
+                ABS_SIGMA.append(np.abs(_df['saya_divide_sigma'][0]))
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
 
                 axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
@@ -123,7 +133,15 @@ def output_report():
                 LOT_SIZE_DIFF.append(lot_size_diff)
 
                 #print(_df)
-                signal_generate(_df, symblA, symblB)
+                total_profit, average_profit, average_pl,total_times, plus_times, minus_times = signal_generate(_df, symblA, symblB)
+
+                total_profit_list.append(total_profit)
+                average_profit_list.append(average_profit)
+                average_plt_list.append(average_pl)
+                total_times_list.append(total_times)
+                plus_times_list.append(plus_times)
+                minus_times_list.append(minus_times)
+                pl_times_list.append(round(plus_times/total_times*100, 2))
 
                 path, ext = os.path.splitext(os.path.basename(_file))
                 #_df.to_excel(writer, sheet_name=path)
@@ -134,17 +152,30 @@ def output_report():
                 OPEN_B_list.append(0)
                 CLOSE_B_list.append(0)
                 SIGMA.append(0)
+                ABS_SIGMA.append(0)
                 DEV_RATE.append(0)
                 AXIS_LOT_SIZE.append(0)
                 PAIR_LOT_SIZE.append(0)
                 LOT_SIZE_DIFF.append(0)
+
+                total_profit_list.append(0)
+                average_profit_list.append(0)
+                average_plt_list.append(0)
+                total_times_list.append(0)
+                plus_times_list.append(0)
+                minus_times_list.append(0)
+                pl_times_list.append(0)
                 continue
 
         corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
-                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,DEV_RATE=DEV_RATE,
-                                         AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,LOT_SIZE_DIFF=LOT_SIZE_DIFF)
+                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,ABS_SIGMA=ABS_SIGMA, DEV_RATE=DEV_RATE,
+                                         AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,LOT_SIZE_DIFF=LOT_SIZE_DIFF,
+                                         total_profit=total_profit_list, average_profit=average_profit_list, average_pl=average_plt_list,
+                                         total_times=total_times_list, plus_times=plus_times_list, minus_times=minus_times_list,
+                                         pl_times=pl_times_list
+                                         )
         #print(corr_df_new)
-        corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
+        # corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
         corr_df_new = corr_df_new.sort_values('ABS_SIGMA', ascending=False)
         corr_df_new.to_csv(os.path.join(data_dir, report_dir, 'corr_result.csv'), encoding=FILE_ENCODING)
 
@@ -155,13 +186,16 @@ def output_report():
 
     print('Output Report Process end!')
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
+def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=15, stop_loss_rate=0.05):
 
     pairs = pairs.sort_values('DATE', ascending=True)
     pairs['DATE'] = pd.to_datetime(pairs['DATE'])
     pairs.index = pairs['DATE']
 
-    pairs['axis_A_long']= (pairs['saya_divide_sigma'] <= -z_entry_threshold) *1.0
+    # print(datetime.today() - relativedelta(years=1))
+    # pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
+
+    pairs['axis_A_long']= (pairs['saya_divide_sigma'] <= -z_entry_threshold) * 1.0
     pairs['axis_A_short'] = (pairs['saya_divide_sigma'] >= z_entry_threshold) * 1.0
     pairs['axis_A_exit_long'] = (pairs['saya_divide_sigma'] >= -1 * z_exit_threshold1) * 1.0
     pairs['axis_A_exit_short'] = (pairs['saya_divide_sigma'] <= z_exit_threshold1) * 1.0
@@ -261,7 +295,17 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
         last_row_index = index
 
     pd_portfolio_list = pd.DataFrame(portfolio_list)
+    # print(pd_portfolio_list)
     pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'), encoding=FILE_ENCODING)
+
+    total_profit = round(pd_portfolio_list['PROFIT'].sum())
+    average_profit = round(pd_portfolio_list['PROFIT'].mean())
+    average_pl = round(pd_portfolio_list['PL'].mean(), 2)
+    total_times = pd_portfolio_list.shape[0]
+    plus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] > 0].shape[0]
+    minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
+
+    return total_profit, average_profit, average_pl,total_times, plus_times, minus_times
 
 if __name__ == '__main__':
     print('maint start ' + strftime("%Y-%m-%d %H:%M:%S"))

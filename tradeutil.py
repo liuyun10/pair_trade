@@ -14,7 +14,7 @@ def get_lot_size(axisPrice, pairPrice):
 
     if axisPrice > pairPrice:
         axis_lot_size = math.floor(maxMount / axisPrice / min_lot_size) * min_lot_size
-        print("axis_lot_size {0}".format(axis_lot_size))
+        # print("axis_lot_size {0}".format(axis_lot_size))
 
         while True:
             lot_diff = np.abs(round((axis_lot_size * axisPrice - pair_lot_size * pairPrice) / (axis_lot_size * axisPrice) *100, 2))
@@ -29,7 +29,7 @@ def get_lot_size(axisPrice, pairPrice):
         # print(pair_lot_size)
     else:
         pair_lot_size = math.floor(maxMount / pairPrice / min_lot_size) * min_lot_size
-        print("pair_lot_size {0}".format(pair_lot_size))
+        # print("pair_lot_size {0}".format(pair_lot_size))
 
         while True:
             lot_diff = np.abs(
