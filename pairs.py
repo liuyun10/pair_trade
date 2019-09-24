@@ -3,10 +3,11 @@ import numpy as np
 import glob, copy, os.path, time
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import matplotlib.pyplot as plt
 from operator import itemgetter
 import shutil,numpy
 from time import gmtime, strftime
+import tradeutil as trade_util
+import fileutil as file_util
 
 pd.set_option('display.max_columns', None)
 
@@ -20,7 +21,7 @@ report_file_name='report'
 FILE_ENCODING='shift_jis'
 
 MEAN_WINDOW=75
-# the threshold of corrb
+# the threshold of corr
 CORR_THRE_SHOLD_THREE_MONTH=0.9
 CORR_THRE_SHOLD_ONE_YEAR=0.9
 
@@ -75,28 +76,6 @@ def calculate_spread_zscore(pairs, symbol1, symbol2):
 
     return pairs
 
-def print_chart(pairs, symbol1, symbol2):
-
-    plt.title('Graph '+ symbol1 + '_' + symbol2)
-    plt.xlabel('DATE')
-    plt.ylabel('Y-Axis')
-
-    x = pairs.index
-
-    y1 = pairs['saya_divide_sigma']
-    plt.plot(x, y1, label='sigma')
-
-    y2= pairs['saya_divide_mean']
-    plt.plot(x, y2, label='saya_mean')
-
-    xmin, xmax = min(x), max(x)
-    plt.hlines(2, xmin, xmax, color='red', linestyle='dashed', label='SIGMA=2', linewidth=0.5)
-    plt.hlines(-2, xmin, xmax, color='red', linestyle='dashed', label='SIGMA=-2', linewidth=0.5)
-    plt.hlines(0, xmin, xmax, color='blue', linestyle='dashed', label='ZERO LINE', linewidth=0.5)
-
-    plt.legend()
-    plt.show()
-
 def output_report():
 
     print('Output Report Processing...')
@@ -137,7 +116,7 @@ def output_report():
                 SIGMA.append(_df['saya_divide_sigma'][0])
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
 
-                axis_lot_size, pair_lot_size, lot_size_diff = get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
+                axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
                 print(axis_lot_size)
                 AXIS_LOT_SIZE.append(axis_lot_size)
                 PAIR_LOT_SIZE.append(pair_lot_size)
@@ -176,14 +155,7 @@ def output_report():
 
     print('Output Report Process end!')
 
-def clean_result_dir():
 
-    result_dir = os.path.join(data_dir, report_dir)
-    if os.path.exists(result_dir):
-        print('Cleaning the result dir:'+report_dir)
-        shutil.rmtree(result_dir)
-
-    os.makedirs(result_dir)
 
 def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=25, stop_loss_rate=0.05):
 
@@ -252,9 +224,9 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
                     total = (axisOpenPrice - axisClosePrice) * axis_lot_size + (pairClosePrice - pairOpenPrice) * pair_lot_size
 
                 position['TOTAL'] = total
-                trade_commission = get_trade_commission(axisOpenPrice,pairOpenPrice, axis_lot_size,pair_lot_size)
+                trade_commission = trade_util.get_trade_commission(axisOpenPrice,pairOpenPrice, axis_lot_size,pair_lot_size)
                 position['COMMISSION_N'] = trade_commission
-                credit_commission=get_credit_commission(axisOpenPrice,pairOpenPrice,axis_lot_size,pair_lot_size,open_days)
+                credit_commission= trade_util.get_credit_commission(axisOpenPrice,pairOpenPrice,axis_lot_size,pair_lot_size,open_days)
                 position['COMMISSION_CREDIT'] = credit_commission
 
                 profit = total - trade_commission - credit_commission
@@ -280,7 +252,7 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
                 haveUnsettledPostion = True
                 axisOpenPrice = row['OPEN_' + symbol_Axis]
                 pairOpenPrice = row['OPEN_' + symbol_Pair]
-                axis_lot_size,pair_lot_size,lot_size_diff = get_lot_size(axisOpenPrice, pairOpenPrice)
+                axis_lot_size,pair_lot_size,lot_size_diff = trade_util.get_lot_size(axisOpenPrice, pairOpenPrice)
 
                 position = {'AXIS_SYMBOL': symbol_Axis, 'PAIR_SYMBOL': symbol_Pair, 'OPEN_DATE': index,
                             'SIGMA':sigma, 'OPEN_CAT':OPEN_CAT,"AXIS_SYMB_OPEN_PRI":axisOpenPrice,
@@ -293,77 +265,10 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
     pd_portfolio_list = pd.DataFrame(portfolio_list)
     pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'), encoding=FILE_ENCODING)
 
-def get_lot_size(axisPrice, pairPrice):
-    # 3475 1401 200 500
-    min_lot_size = 100
-    maxMount = 1000000
-    mixMount = 100000
-
-    unit_axis_lot_size = min_lot_size
-    unit_pair_lot_size = min_lot_size
-
-    if axisPrice > pairPrice:
-        ratio = round(axisPrice / pairPrice)
-        unit_pair_lot_size = min_lot_size * ratio
-
-    else:
-        ratio = round(pairPrice / axisPrice)
-        unit_axis_lot_size = min_lot_size * ratio
-
-    axis_lot_size = unit_axis_lot_size
-    pair_lot_size = unit_pair_lot_size
-
-    while True:
-
-        if axis_lot_size * axisPrice < maxMount and pair_lot_size * pairPrice < maxMount:
-            axis_lot_size = axis_lot_size + unit_axis_lot_size
-            pair_lot_size = pair_lot_size + unit_pair_lot_size
-
-        else:
-            if axis_lot_size != unit_axis_lot_size or pair_lot_size != unit_pair_lot_size:
-                axis_lot_size = axis_lot_size - unit_axis_lot_size
-                pair_lot_size = pair_lot_size - unit_pair_lot_size
-            break
-    lot_diff = np.abs(
-        round((axis_lot_size * axisPrice - pair_lot_size * pairPrice) / (axis_lot_size * axisPrice) * 100, 2))
-
-    return axis_lot_size, pair_lot_size, lot_diff
-
-def get_trade_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size):
-
-    consumtion_tax_ration = 0.1
-    axia_total = axisPrice * axis_lot_size
-
-    if axia_total > 500000:
-        axis_commission = 350
-    else:
-        axis_commission =180
-
-    pair_total = pairPrice * pair_lot_size
-    if pair_total > 500000:
-        pair_commission = 350
-    else:
-        pair_commission =180
-
-    axis_commission = axis_commission*2*(1+consumtion_tax_ration)
-    pair_commission = pair_commission*2*(1+consumtion_tax_ration)
-
-    return axis_commission + pair_commission
-
-def get_credit_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size, open_days):
-
-    credit_rate=0.03
-
-    axis_comm = axisPrice * axis_lot_size * credit_rate /365 * open_days
-    pair_comm = pairPrice * pair_lot_size * credit_rate / 365 * open_days
-
-    total = round(axis_comm + pair_comm)
-    return total
-
 if __name__ == '__main__':
     print('maint start ' + strftime("%Y-%m-%d %H:%M:%S"))
 
-    clean_result_dir()
+    file_util.clean_target_dir(data_dir, report_dir)
 
     symbols = []
     file_list = sorted(glob.glob(data_dir + '\*.csv'))
@@ -412,11 +317,7 @@ if __name__ == '__main__':
     # signal_generate(_pairs, '9064','9505')
 
     #print chart
-    # pairs_one_year = pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
-    #print_chart(pairs_one_year, symbolA, symbolB)
-
-
-
-
+    #pairs_one_year = pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
+    #trade_util.print_chart(pairs_one_year, symbolA, symbolB)
 
 
