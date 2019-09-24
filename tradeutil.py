@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 
 def get_lot_size(axisPrice, pairPrice):
 
+    if axisPrice <= 0 or pairPrice <= 0:
+        return 1,1,1
+
     maxMount = 1000000
     # mixMount = 1000000
 

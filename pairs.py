@@ -11,8 +11,8 @@ import fileutil as file_util
 
 pd.set_option('display.max_columns', None)
 
-# data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
-data_dir='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
+data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
+#data_dir='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
 report_dir='result'
 corr_result_file_name='corr.csv'
 report_file_name='report'
