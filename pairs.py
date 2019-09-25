@@ -141,7 +141,10 @@ def output_report():
                 total_times_list.append(total_times)
                 plus_times_list.append(plus_times)
                 minus_times_list.append(minus_times)
-                pl_times_list.append(round(plus_times/total_times*100, 2))
+                if plus_times <= 0 or total_times <= 0:
+                    pl_times_list.append(0)
+                else:
+                    pl_times_list.append(round(plus_times/total_times*100, 2))
 
                 path, ext = os.path.splitext(os.path.basename(_file))
                 #_df.to_excel(writer, sheet_name=path)
