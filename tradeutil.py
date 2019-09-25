@@ -15,47 +15,41 @@ def get_lot_size(axisPrice, pairPrice):
     pair_lot_size = min_lot_size
     lot_dict = {}
 
-    if axisPrice > pairPrice:
-        axis_lot_size = math.floor(maxMount / axisPrice / min_lot_size) * min_lot_size
-        # print("axis_lot_size {0}".format(axis_lot_size))
+    try:
 
-        while True:
+        if axisPrice > pairPrice:
+            axis_lot_size = math.floor(maxMount / axisPrice / min_lot_size) * min_lot_size
+            # print("axis_lot_size {0}".format(axis_lot_size))
 
-            try:
-                lot_diff = np.abs(
-                    round((axis_lot_size * axisPrice - pair_lot_size * pairPrice) / (axis_lot_size * axisPrice) * 100,
-                          2))
+            while True:
+                lot_diff = np.abs(round((axis_lot_size * axisPrice - pair_lot_size * pairPrice) / (axis_lot_size * axisPrice) * 100,2))
                 lot_dict.setdefault(pair_lot_size, lot_diff)
                 if pair_lot_size * pairPrice > maxMount:
                     break
                 else:
                     pair_lot_size = pair_lot_size + min_lot_size
-            except:
-                lot_diff = 1
 
-        pair_lot_size = min(lot_dict, key=lot_dict.get) # get the key of min in all list
-        lot_diff = lot_dict[pair_lot_size]
-        # print(pair_lot_size)
-    else:
-        pair_lot_size = math.floor(maxMount / pairPrice / min_lot_size) * min_lot_size
-        # print("pair_lot_size {0}".format(pair_lot_size))
+            pair_lot_size = min(lot_dict, key=lot_dict.get)  # get the key of min in all list
+            lot_diff = lot_dict[pair_lot_size]
+            # print(pair_lot_size)
+        else:
+            pair_lot_size = math.floor(maxMount / pairPrice / min_lot_size) * min_lot_size
+            # print("pair_lot_size {0}".format(pair_lot_size))
 
-        while True:
-            try:
-                lot_diff = np.abs(
-                    round((pair_lot_size * pairPrice - axis_lot_size * axisPrice) / (pair_lot_size * pairPrice) * 100,
-                          2))
+            while True:
+                lot_diff = np.abs(round((pair_lot_size * pairPrice - axis_lot_size * axisPrice) / (pair_lot_size * pairPrice) * 100,2))
                 lot_dict.setdefault(axis_lot_size, lot_diff)
                 if axis_lot_size * axisPrice > maxMount:
                     break
                 else:
                     axis_lot_size = axis_lot_size + min_lot_size
-            except:
-                lot_diff = 1
 
-        axis_lot_size = min(lot_dict, key=lot_dict.get)  # get the key of min in all list
-        lot_diff = lot_dict[axis_lot_size]
-        # print(axis_lot_size)
+            axis_lot_size = min(lot_dict, key=lot_dict.get)  # get the key of min in all list
+            lot_diff = lot_dict[axis_lot_size]
+            # print(axis_lot_size)
+
+    except:
+        lot_diff = 1
 
     return axis_lot_size, pair_lot_size, lot_diff
 

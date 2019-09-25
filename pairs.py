@@ -127,7 +127,7 @@ def output_report():
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
 
                 axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
-                print(axis_lot_size)
+                # print(axis_lot_size)
                 AXIS_LOT_SIZE.append(axis_lot_size)
                 PAIR_LOT_SIZE.append(pair_lot_size)
                 LOT_SIZE_DIFF.append(lot_size_diff)
@@ -330,12 +330,20 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
     # print(pd_portfolio_list)
     pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'), encoding=FILE_ENCODING)
 
-    total_profit = round(pd_portfolio_list['PROFIT'].sum())
-    average_profit = round(pd_portfolio_list['PROFIT'].mean())
-    average_pl = round(pd_portfolio_list['PL'].mean(), 2)
-    total_times = pd_portfolio_list.shape[0]
-    plus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] > 0].shape[0]
-    minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
+    try:
+        total_profit = round(pd_portfolio_list['PROFIT'].sum())
+        average_profit = round(pd_portfolio_list['PROFIT'].mean())
+        average_pl = round(pd_portfolio_list['PL'].mean(), 2)
+        total_times = pd_portfolio_list.shape[0]
+        plus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] > 0].shape[0]
+        minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
+    except:
+        total_profit = 0
+        average_profit = 0
+        average_pl = 0
+        total_times = 0
+        plus_times = 0
+        minus_times = 0
 
     return total_profit, average_profit, average_pl,total_times, plus_times, minus_times
 
