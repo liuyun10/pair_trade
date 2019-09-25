@@ -186,8 +186,9 @@ def output_report():
 
     print('Output Report Process end!')
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold1=0, entry_max_days=15, stop_loss_rate=0.05):
+def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15, stop_loss_rate=-0.025, stop_profit_rate=0.025):
 
+    isUseExitThreshold = False
     pairs = pairs.sort_values('DATE', ascending=True)
     pairs['DATE'] = pd.to_datetime(pairs['DATE'])
     pairs.index = pairs['DATE']
@@ -197,8 +198,8 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
 
     pairs['axis_A_long']= (pairs['saya_divide_sigma'] <= -z_entry_threshold) * 1.0
     pairs['axis_A_short'] = (pairs['saya_divide_sigma'] >= z_entry_threshold) * 1.0
-    pairs['axis_A_exit_long'] = (pairs['saya_divide_sigma'] >= -1 * z_exit_threshold1) * 1.0
-    pairs['axis_A_exit_short'] = (pairs['saya_divide_sigma'] <= z_exit_threshold1) * 1.0
+    pairs['axis_A_exit_long'] = (pairs['saya_divide_sigma'] >= -1 * z_exit_threshold) * 1.0
+    pairs['axis_A_exit_short'] = (pairs['saya_divide_sigma'] <= z_exit_threshold) * 1.0
 
     #pairs = pairs.sort_values('DATE', ascending=True)
     #print(pairs)
@@ -207,6 +208,8 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
     portfolio_list = []
     last_row_index=''
     haveUnsettledPostion=False
+
+    CLOSE_STOP_LOSS = ''
 
     for index, row in pairs.iterrows():
 
@@ -222,14 +225,39 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
             _cat = position['OPEN_CAT']
 
             open_days = int((index-position['OPEN_DATE']) / np.timedelta64(1, 'D'))
-            if 'BUY' == _cat and pairs.at[last_row_index, 'axis_A_exit_long'] == 1:
+
+            if len(CLOSE_STOP_LOSS) <= 0:
+                axis_now_price = row['CLOSE_' + symbol_Axis]
+                pair_now_price = row['CLOSE_' + symbol_Pair]
+                axis_open_price = position['AXIS_SYMB_OPEN_PRI']
+                pair_open_price = position['PAIR_SYMB_OPEN_PRI']
+                axis_now_lot_size = position['AXIS_SYMB_LOT']
+                pair_now_lot_size = position['PAIR_SYMB_LOT']
+                total_mount = axis_open_price * axis_now_lot_size + pair_open_price * pair_now_lot_size
+
+                if 'BUY' == _cat:
+                    now_profit = (axis_now_price - axis_open_price) * axis_now_lot_size +  (
+                            pair_open_price - pair_now_price) * pair_now_lot_size
+                else:
+                    now_profit = (axis_open_price - axis_now_price) * axis_now_lot_size + (
+                                pair_now_price - pair_open_price) * pair_now_lot_size
+
+                if now_profit < 0 and now_profit / total_mount <= stop_loss_rate:
+                    CLOSE_STOP_LOSS = 'STOP_LOSS_OVER_RATIO'
+                elif now_profit > 0 and now_profit / total_mount >= stop_profit_rate:
+                    CLOSE_STOP_LOSS = 'STOP_PROFIT_OVER_RATIO'
+
+                if len(CLOSE_STOP_LOSS) > 0:
+                    continue
+
+            if isUseExitThreshold and 'BUY' == _cat and pairs.at[last_row_index, 'axis_A_exit_long'] == 1:
                 CLOSE_CAT = 'CLOSE_BUY'
-            elif 'SELL' == _cat and pairs.at[last_row_index, 'axis_A_exit_short'] ==1:
+            elif isUseExitThreshold and 'SELL' == _cat and pairs.at[last_row_index, 'axis_A_exit_short'] ==1:
                 CLOSE_CAT = 'CLOSE_SELL'
-            elif open_days > entry_max_days: # Stop Loss
+            elif open_days > entry_max_days: # Stop Loss by Open days
                 CLOSE_CAT = 'SL_MAX_DAY_OVER'
 
-            if len(CLOSE_CAT) > 0:
+            if len(CLOSE_CAT) > 0 or len(CLOSE_STOP_LOSS) > 0:
                 axisClosePrice = row['OPEN_'+ symbol_Axis]
                 pairClosePrice = row['OPEN_' + symbol_Pair]
 
@@ -237,6 +265,9 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
 
                 position['OPEN_DAYS'] = open_days
                 position['CLOSE_CAT'] = CLOSE_CAT
+                if len(CLOSE_STOP_LOSS) > 0:
+                    position['CLOSE_CAT'] = CLOSE_STOP_LOSS
+
                 position['AXIS_SYMB_CLOSE_PRI'] = axisClosePrice
                 position['PAIR_SYMB_CLOSE_PRI'] = pairClosePrice
 
@@ -249,10 +280,11 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
                 pairOpenPrice = position['PAIR_SYMB_OPEN_PRI']
 
                 haveUnsettledPostion = False
+                CLOSE_STOP_LOSS = ''
 
-                if  CLOSE_CAT == 'CLOSE_BUY' or (CLOSE_CAT == 'SL_MAX_DAY_OVER' and 'BUY'==_cat):
+                if  CLOSE_CAT == 'CLOSE_BUY' or  'BUY' ==_cat:
                     total = (axisClosePrice - axisOpenPrice) * axis_lot_size + (pairOpenPrice - pairClosePrice) * pair_lot_size
-                elif CLOSE_CAT == 'CLOSE_SELL' or (CLOSE_CAT == 'SL_MAX_DAY_OVER' and 'SELL'==_cat):
+                elif CLOSE_CAT == 'CLOSE_SELL' or 'SELL'==_cat:
                     total = (axisOpenPrice - axisClosePrice) * axis_lot_size + (pairClosePrice - pairOpenPrice) * pair_lot_size
 
                 position['TOTAL'] = total
