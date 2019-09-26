@@ -25,6 +25,8 @@ MEAN_WINDOW=75
 CORR_THRE_SHOLD_THREE_MONTH=0.9
 CORR_THRE_SHOLD_ONE_YEAR=0.9
 
+MAX_OPEN_PRICE_DIFF=10
+
 def create_pairs_dataframe(data_dir, symbol1, symbol2):
     # print("Importing CSV data...")
     # print("Constructing dual matrix for s% and s%" % (symbol1, symbol2))
@@ -307,19 +309,21 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
 
         else:
 
-            if pairs.at[last_row_index, 'axis_A_long'] == 1:
+            axisOpenPrice = row['OPEN_' + symbol_Axis]
+            pairOpenPrice = row['OPEN_' + symbol_Pair]
+            axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(axisOpenPrice, pairOpenPrice)
+
+            if pairs.at[last_row_index, 'axis_A_long'] == 1 and lot_size_diff < MAX_OPEN_PRICE_DIFF:
                 OPEN_CAT = 'BUY' # BUY AXIS COMBOL
 
-            elif pairs.at[last_row_index, 'axis_A_short'] == 1:
+            elif pairs.at[last_row_index, 'axis_A_short'] == 1 and lot_size_diff < MAX_OPEN_PRICE_DIFF:
                 OPEN_CAT = 'SELL'
 
             if len(OPEN_CAT) > 0:
 
                 sigma = round(pairs.at[last_row_index, 'saya_divide_sigma'],2)
                 haveUnsettledPostion = True
-                axisOpenPrice = row['OPEN_' + symbol_Axis]
-                pairOpenPrice = row['OPEN_' + symbol_Pair]
-                axis_lot_size,pair_lot_size,lot_size_diff = trade_util.get_lot_size(axisOpenPrice, pairOpenPrice)
+
 
                 position = {'AXIS_SYMBOL': symbol_Axis, 'PAIR_SYMBOL': symbol_Pair, 'OPEN_DATE': index,
                             'SIGMA':sigma, 'OPEN_CAT':OPEN_CAT,"AXIS_SYMB_OPEN_PRI":axisOpenPrice,
@@ -329,18 +333,20 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
 
         last_row_index = index
 
-    pd_portfolio_list = pd.DataFrame(portfolio_list)
-    # print(pd_portfolio_list)
-    pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'), encoding=FILE_ENCODING)
+    if len(portfolio_list) > 0:
+        pd_portfolio_list = pd.DataFrame(portfolio_list)
+        # print(pd_portfolio_list)
+        pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'),
+                                 encoding=FILE_ENCODING)
 
-    try:
         total_profit = round(pd_portfolio_list['PROFIT'].sum())
         average_profit = round(pd_portfolio_list['PROFIT'].mean())
         average_pl = round(pd_portfolio_list['PL'].mean(), 2)
         total_times = pd_portfolio_list.shape[0]
         plus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] > 0].shape[0]
         minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
-    except:
+
+    else:
         total_profit = 0
         average_profit = 0
         average_pl = 0
@@ -380,10 +386,16 @@ if __name__ == '__main__':
             corr1, corr2 = check_corr(_pairs, symb1, symb2)
             # print('%s - %s 3M:%f 1Y:%f' % (symb1, symb2, corr1, corr2))
 
-            symbols_corr_list.append([symb1, symb2, corr1, corr2])
             symbol_check_dict[symb1 + symb2] =''
 
-            if (corr1 < CORR_THRE_SHOLD_THREE_MONTH or corr2 < CORR_THRE_SHOLD_ONE_YEAR): continue
+            if (corr1 < CORR_THRE_SHOLD_THREE_MONTH or corr2 < CORR_THRE_SHOLD_ONE_YEAR):
+                continue
+
+            axis_lot_size, pair_lot_size, lot_diff = trade_util.get_lot_size(_pairs['CLOSE_'+ symb1][0], _pairs['CLOSE_'+ symb2][0])
+            if axis_lot_size == 1 or pair_lot_size == 1:
+                continue
+
+            symbols_corr_list.append([symb1, symb2, corr1, corr2])
 
             _pairs = _pairs.sort_values('DATE', ascending=True)
             _pairs = calculate_spread_zscore(_pairs, symb1, symb2)

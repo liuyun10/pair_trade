@@ -4,19 +4,20 @@ import matplotlib.pyplot as plt
 
 def get_lot_size(axisPrice, pairPrice):
 
-    if axisPrice <= 0 or pairPrice <= 0:
-        return 1,1,1
-
     maxMount = 1000000
     # mixMount = 1000000
-
     min_lot_size = 100
+
+    if axisPrice <= 0 or pairPrice <= 0:
+        return 1,1,100
+    elif axisPrice * min_lot_size > maxMount or pairPrice * min_lot_size  > maxMount:
+        return 1,1,100
+
     axis_lot_size = min_lot_size
     pair_lot_size = min_lot_size
     lot_dict = {}
 
     try:
-
         if axisPrice > pairPrice:
             axis_lot_size = math.floor(maxMount / axisPrice / min_lot_size) * min_lot_size
             # print("axis_lot_size {0}".format(axis_lot_size))
