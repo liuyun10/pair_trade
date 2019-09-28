@@ -85,6 +85,11 @@ def output_report():
     report_file = os.path.join(data_dir, report_dir, corr_result_file_name + '_' + timestr + '.xlsx')
 
     corr_df = pd.read_csv(os.path.join(data_dir, report_dir, corr_result_file_name), encoding=FILE_ENCODING)
+
+    master_file = os.path.join(data_dir, 'master', 'master.csv')
+    master_df = pd.read_csv(master_file, encoding=FILE_ENCODING)
+    corr_df = trade_util.addMasterInfo(corr_df, master_df)
+
     corr_df_new = corr_df.copy(deep=True)
 
     OPEN_A_list=[]
@@ -392,7 +397,7 @@ if __name__ == '__main__':
                 continue
 
             axis_lot_size, pair_lot_size, lot_diff = trade_util.get_lot_size(_pairs['CLOSE_'+ symb1][0], _pairs['CLOSE_'+ symb2][0])
-            if axis_lot_size == 1 or pair_lot_size == 1:
+            if axis_lot_size == 1 or pair_lot_size == 1 or lot_diff == 1:
                 continue
 
             symbols_corr_list.append([symb1, symb2, corr1, corr2])

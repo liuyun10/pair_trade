@@ -109,6 +109,37 @@ def print_chart(pairs, symbol1, symbol2):
     plt.legend()
     plt.show()
 
+def addMasterInfo(corr_df, master_df):
+
+    stockA_name_list = []
+    stockB_name_list = []
+    stockA_industry_list = []
+    stockB_industry_list = []
+
+    master_df.index = master_df['SYMBL']
+    print(master_df)
+    print(master_df.dtypes)
+
+    for index2, row in corr_df.iterrows():
+        symblA = int(row.SYM_A)
+        symblB = int(row.SYM_B)
+
+        # print("symblA:{0} symblB:{1}".format(symblA,symblB))
+
+        # stockA_name = master_df[master_df.index == symblA].at[symblA, 'NAME']
+        # stockA_name = master_df.loc[master_df.index == symblA]
+        # df.loc[df.foo == 222, 'bar'].values[0]
+        # stockA_name_list.append(stockA_name)
+        stockA_name_list.append(master_df[master_df.index == symblA].at[symblA, 'NAME'])
+        stockB_name_list.append(master_df[master_df.index == symblB].at[symblB, 'NAME'])
+        stockA_industry_list.append(master_df[master_df.index == symblA].at[symblA, 'INDUSTRY'])
+        stockB_industry_list.append(master_df[master_df.index == symblB].at[symblB, 'INDUSTRY'])
+
+    corr_df = corr_df.assign(SYM_A_NAME=stockA_name_list, SYM_B_NAME=stockB_name_list, SYM_A_INDUSTRY=stockA_industry_list, SYM_B_INDUSTRY=stockB_industry_list)
+    corr_df = corr_df.loc[:,['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY','SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY','CORR_3M','CORR_1Y']]
+
+    return corr_df
+
 if __name__ == '__main__':
     result=get_lot_size(1401,2000)
     print(result)
