@@ -117,8 +117,8 @@ def addMasterInfo(corr_df, master_df):
     stockB_industry_list = []
 
     master_df.index = master_df['SYMBL']
-    print(master_df)
-    print(master_df.dtypes)
+    # print(master_df)
+    # print(master_df.dtypes)
 
     for index2, row in corr_df.iterrows():
         symblA = int(row.SYM_A)
@@ -126,10 +126,6 @@ def addMasterInfo(corr_df, master_df):
 
         # print("symblA:{0} symblB:{1}".format(symblA,symblB))
 
-        # stockA_name = master_df[master_df.index == symblA].at[symblA, 'NAME']
-        # stockA_name = master_df.loc[master_df.index == symblA]
-        # df.loc[df.foo == 222, 'bar'].values[0]
-        # stockA_name_list.append(stockA_name)
         stockA_name_list.append(master_df[master_df.index == symblA].at[symblA, 'NAME'])
         stockB_name_list.append(master_df[master_df.index == symblB].at[symblB, 'NAME'])
         stockA_industry_list.append(master_df[master_df.index == symblA].at[symblA, 'INDUSTRY'])

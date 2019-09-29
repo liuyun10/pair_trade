@@ -389,11 +389,15 @@ if __name__ == '__main__':
 
             _pairs = create_pairs_dataframe(data_dir, symb1, symb2)
             corr1, corr2 = check_corr(_pairs, symb1, symb2)
-            # print('%s - %s 3M:%f 1Y:%f' % (symb1, symb2, corr1, corr2))
+            # print('%s - %s 3M:%f 1Y:%f' % (symb1, symb2, corr1, cor
+            # r2))
 
             symbol_check_dict[symb1 + symb2] =''
 
             if (corr1 < CORR_THRE_SHOLD_THREE_MONTH or corr2 < CORR_THRE_SHOLD_ONE_YEAR):
+                continue
+
+            if len(_pairs['CLOSE_'+ symb1]) == 0 or len(_pairs['CLOSE_'+ symb2]) == 0:
                 continue
 
             axis_lot_size, pair_lot_size, lot_diff = trade_util.get_lot_size(_pairs['CLOSE_'+ symb1][0], _pairs['CLOSE_'+ symb2][0])
