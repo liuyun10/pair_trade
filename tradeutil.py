@@ -1,6 +1,10 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+import statsmodels.tsa.stattools as ts
 
 def get_lot_size(axisPrice, pairPrice):
 
@@ -117,8 +121,6 @@ def addMasterInfo(corr_df, master_df):
     stockB_industry_list = []
 
     master_df.index = master_df['SYMBL']
-    # print(master_df)
-    # print(master_df.dtypes)
 
     for index2, row in corr_df.iterrows():
         symblA = int(row.SYM_A)
@@ -132,9 +134,44 @@ def addMasterInfo(corr_df, master_df):
         stockB_industry_list.append(master_df[master_df.index == symblB].at[symblB, 'INDUSTRY'])
 
     corr_df = corr_df.assign(SYM_A_NAME=stockA_name_list, SYM_B_NAME=stockB_name_list, SYM_A_INDUSTRY=stockA_industry_list, SYM_B_INDUSTRY=stockB_industry_list)
-    corr_df = corr_df.loc[:,['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY','SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY','CORR_3M','CORR_1Y']]
+    corr_df = corr_df.loc[:,['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY','SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY','CORR_3M','CORR_1Y','COINT_3M','COINT_1Y']]
 
     return corr_df
+
+def check_corr(pairs, symbol1, symbol2):
+
+    # Check the corr of pairs with 3 month data
+    three_month_ago = datetime.today() - relativedelta(months=3)
+    three_month_data = pairs[pairs.index > three_month_ago]
+    s1 = pd.Series(three_month_data['CLOSE_'+symbol1])
+    s2 = pd.Series(three_month_data['CLOSE_' + symbol2])
+    res_3m = check_correlation(s1, s2)
+    # print('%s - %s corr(three month)= %f' % (symbol1, symbol2, res1))
+
+    # Check the corr of pairs with 1 year data
+    one_year_ago = datetime.today() - relativedelta(years=1)
+    one_year_data = pairs[pairs.index > one_year_ago]
+    s1 = pd.Series(one_year_data['CLOSE_' + symbol1])
+    s2 = pd.Series(one_year_data['CLOSE_' + symbol2])
+    res_1y = check_correlation(s1, s2)
+    # print('%s - %s corr(three month)= %f' % (symbol1, symbol2, res2))
+    return res_3m, res_1y
+
+def check_correlation (series1, series2):
+    return series1.corr(series2)
+
+def check_cointegration(pairs, symbol1, symbol2):
+    # print "Computing Cointegration..."
+    three_month_ago = datetime.today() - relativedelta(months=3)
+    three_month_data = pairs[pairs.index > three_month_ago]
+    coin_result1 = ts.coint(three_month_data['CLOSE_'+symbol1], three_month_data['CLOSE_'+symbol2] )
+
+    one_year_ago = datetime.today() - relativedelta(years=1)
+    one_year_data = pairs[pairs.index > one_year_ago]
+    coin_result2 = ts.coint(one_year_data['CLOSE_'+symbol1], one_year_data['CLOSE_'+symbol2] )
+
+    #Confidence Level chosen as 0.05 (5%)
+    return coin_result1[1], coin_result2[1]
 
 if __name__ == '__main__':
     result=get_lot_size(1401,2000)

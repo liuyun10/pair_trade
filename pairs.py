@@ -1,38 +1,23 @@
 import pandas as pd
 import numpy as np
-import glob, os.path, time, numpy
+import os.path, time, numpy
+import tradeutil as trade_util
+import fileutil as file_util
+import setting as setting
+
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from operator import itemgetter
 from time import strftime
 
-import tradeutil as trade_util
-import fileutil as file_util
-
 pd.set_option('display.max_columns', None)
-
-data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
-#data_dir='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
-report_dir='result'
 corr_result_file_name='corr.csv'
-report_file_name='report'
-
-### Const ###
-FILE_ENCODING='shift_jis'
-
-MEAN_WINDOW=75
-# the threshold of corr
-CORR_THRE_SHOLD_THREE_MONTH=0.9
-CORR_THRE_SHOLD_ONE_YEAR=0.9
-
-MAX_OPEN_PRICE_DIFF=10
 
 def create_pairs_dataframe(data_dir, symbol1, symbol2):
     # print("Importing CSV data...")
     # print("Constructing dual matrix for s% and s%" % (symbol1, symbol2))
 
-    sym1 = pd.read_csv(os.path.join(data_dir, symbol1+'.csv'), encoding=FILE_ENCODING)
-    sym2 = pd.read_csv(os.path.join(data_dir, symbol2 + '.csv'), encoding=FILE_ENCODING)
+    sym1 = file_util.read_csv(os.path.join(data_dir, symbol1+'.csv'))
+    sym2 = file_util.read_csv(os.path.join(data_dir, symbol2 + '.csv'))
 
     sym1.rename(columns={'OPEN': 'OPEN_' + symbol1, 'CLOSE': 'CLOSE_' + symbol1}, inplace=True)
     sym2.rename(columns={'OPEN': 'OPEN_' + symbol2, 'CLOSE': 'CLOSE_' + symbol2}, inplace=True)
@@ -46,48 +31,26 @@ def create_pairs_dataframe(data_dir, symbol1, symbol2):
 
     return pairs
 
-def check_corr(pairs, symbol1, symbol2):
-
-    # Check the corr of pairs with 3 month data
-    three_month_ago = datetime.today() - relativedelta(months=3)
-    three_month_data = pairs[pairs.index > three_month_ago]
-    s1 = pd.Series(three_month_data['CLOSE_'+symbol1])
-    s2 = pd.Series(three_month_data['CLOSE_' + symbol2])
-    res1 = s1.corr(s2)
-    # print('%s - %s corr(three month)= %f' % (symbol1, symbol2, res1))
-
-    # Check the corr of pairs with 3 month data
-    one_year_ago = datetime.today() - relativedelta(years=1)
-    one_year_data = pairs[pairs.index > one_year_ago]
-    s1 = pd.Series(one_year_data['CLOSE_' + symbol1])
-    s2 = pd.Series(one_year_data['CLOSE_' + symbol2])
-    res2 = s1.corr(s2)
-    # print('%s - %s corr(three month)= %f' % (symbol1, symbol2, res2))
-
-    return res1, res2
-
 def calculate_spread_zscore(pairs, symbol1, symbol2):
 
     # pairs['saya_minus'] = pairs['CLOSE_'+ symbol1] - pairs['CLOSE_'+symbol2]
     pairs['saya_divide'] = pairs['CLOSE_'+ symbol1] / pairs['CLOSE_'+symbol2]
 
-    pairs['saya_divide_mean'] = (pd.Series(pairs['saya_divide'])).rolling(window=MEAN_WINDOW, center=False).mean()
-    pairs['saya_divide_std'] = (pd.Series(pairs['saya_divide'])).rolling(window=MEAN_WINDOW, center=False).std(ddof=0)
+    pairs['saya_divide_mean'] = (pd.Series(pairs['saya_divide'])).rolling(window=setting.SAYA_MEAN_WINDOW, center=False).mean()
+    pairs['saya_divide_std'] = (pd.Series(pairs['saya_divide'])).rolling(window=setting.SAYA_MEAN_WINDOW, center=False).std(ddof=0)
     pairs['saya_divide_sigma'] = (pairs['saya_divide'] - pairs['saya_divide_mean']) / pairs['saya_divide_std']
     pairs['deviation_rate(%)'] = round((pairs['saya_divide'] - pairs['saya_divide_mean']) / pairs['saya_divide'] *100,2)
 
     return pairs
 
-def output_report():
+def output_report(corr_df):
 
     print('Output Report Processing...')
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    report_file = os.path.join(data_dir, report_dir, corr_result_file_name + '_' + timestr + '.xlsx')
+    report_file = os.path.join(setting.get_result_dir(), 'report_' + timestr + '.xlsx')
 
-    corr_df = pd.read_csv(os.path.join(data_dir, report_dir, corr_result_file_name), encoding=FILE_ENCODING)
-
-    master_file = os.path.join(data_dir, 'master', 'master.csv')
-    master_df = pd.read_csv(master_file, encoding=FILE_ENCODING)
+    # corr_df = file_util.read_csv(os.path.join(setting.get_result_dir(), corr_result_file_name))
+    master_df = file_util.read_csv(os.path.join(setting.get_master_file_dir()))
     corr_df = trade_util.addMasterInfo(corr_df, master_df)
 
     corr_df_new = corr_df.copy(deep=True)
@@ -98,6 +61,8 @@ def output_report():
     CLOSE_B_list = []
     SIGMA=[]
     ABS_SIGMA = []
+    TRADE_A = []
+    TRADE_B = []
     DEV_RATE=[]
     AXIS_LOT_SIZE=[]
     PAIR_LOT_SIZE = []
@@ -110,6 +75,7 @@ def output_report():
     plus_times_list = []
     minus_times_list= []
     pl_times_list= []
+    open_days_list = []
 
     with pd.ExcelWriter(report_file) as writer:
         for index, row in corr_df.iterrows():
@@ -118,12 +84,9 @@ def output_report():
             symblB = str(int(row.SYM_B))
             #print('symblA=%s symblB=%s' % (symblA,symblB))
 
-            # if row.CORR_3M < CORR_THRE_SHOLD_THREE_MONTH or row.CORR_1Y < CORR_THRE_SHOLD_ONE_YEAR:
-                # break
-
             try:
-                _file = os.path.join(data_dir, report_dir, symblA + '_' + symblB + '.csv')
-                _df = pd.read_csv(_file, encoding=FILE_ENCODING)
+                _file = os.path.join(setting.get_result_dir(), symblA + '_' + symblB + '.csv')
+                _df = file_util.read_csv(_file)
 
                 OPEN_A_list.append(_df['OPEN_' + symblA][0])
                 CLOSE_A_list.append(_df['CLOSE_' + symblA][0])
@@ -131,6 +94,14 @@ def output_report():
                 CLOSE_B_list.append(_df['CLOSE_' + symblB][0])
                 SIGMA.append(_df['saya_divide_sigma'][0])
                 ABS_SIGMA.append(np.abs(_df['saya_divide_sigma'][0]))
+
+                if (_df['saya_divide_sigma'][0] > 0):
+                    TRADE_A.append("SELL")
+                    TRADE_B.append("BUY")
+                else:
+                    TRADE_A.append("BUY")
+                    TRADE_B.append("SELL")
+
                 DEV_RATE.append(_df['deviation_rate(%)'][0])
 
                 axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(_df['CLOSE_' + symblA][0], _df['CLOSE_' + symblB][0])
@@ -140,7 +111,7 @@ def output_report():
                 LOT_SIZE_DIFF.append(lot_size_diff)
 
                 #print(_df)
-                total_profit, average_profit, average_pl,total_times, plus_times, minus_times = signal_generate(_df, symblA, symblB)
+                total_profit, average_profit, average_pl,total_times, plus_times, minus_times, open_days = signal_generate(_df, symblA, symblB)
 
                 total_profit_list.append(total_profit)
                 average_profit_list.append(average_profit)
@@ -152,8 +123,9 @@ def output_report():
                     pl_times_list.append(0)
                 else:
                     pl_times_list.append(round(plus_times/total_times*100, 2))
+                open_days_list.append(open_days)
 
-                path, ext = os.path.splitext(os.path.basename(_file))
+                # path, ext = os.path.splitext(os.path.basename(_file))
                 #_df.to_excel(writer, sheet_name=path)
 
             except FileNotFoundError:
@@ -168,6 +140,9 @@ def output_report():
                 PAIR_LOT_SIZE.append(0)
                 LOT_SIZE_DIFF.append(0)
 
+                TRADE_A.append("")
+                TRADE_B.append("")
+
                 total_profit_list.append(0)
                 average_profit_list.append(0)
                 average_plt_list.append(0)
@@ -175,19 +150,26 @@ def output_report():
                 plus_times_list.append(0)
                 minus_times_list.append(0)
                 pl_times_list.append(0)
+                open_days_list.append(0)
                 continue
 
         corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
-                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,ABS_SIGMA=ABS_SIGMA, DEV_RATE=DEV_RATE,
+                                         CLOSE_B=CLOSE_B_list, SIGMA=SIGMA,ABS_SIGMA=ABS_SIGMA, TRADE_A=TRADE_A, TRADE_B=TRADE_B, DEV_RATE=DEV_RATE,
                                          AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,LOT_SIZE_DIFF=LOT_SIZE_DIFF,
                                          total_profit=total_profit_list, average_profit=average_profit_list, average_pl=average_plt_list,
                                          total_times=total_times_list, plus_times=plus_times_list, minus_times=minus_times_list,
-                                         pl_times=pl_times_list
-                                         )
+                                         pl_times=pl_times_list, open_days=open_days_list)
         #print(corr_df_new)
         # corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
         corr_df_new = corr_df_new.sort_values('ABS_SIGMA', ascending=False)
-        corr_df_new.to_csv(os.path.join(data_dir, report_dir, 'corr_result.csv'), encoding=FILE_ENCODING)
+
+        corr_df_new = corr_df_new.loc[:,
+                  ['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY', 'OPEN_A','CLOSE_A','AXIS_LOT_SIZE','TRADE_A',
+                   'SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY', 'OPEN_B','CLOSE_B','PAIR_LOT_SIZE','TRADE_B',
+                   'CORR_3M','CORR_1Y', 'COINT_3M', 'COINT_1Y','SIGMA','ABS_SIGMA','DEV_RATE','LOT_SIZE_DIFF',
+                   'total_profit','average_profit','average_pl','total_times','plus_times','minus_times','pl_times', 'open_days']]
+
+        file_util.write_csv(corr_df_new, os.path.join(setting.get_result_dir(), 'corr_result.csv'))
 
         corr_df_new.to_excel(writer, sheet_name='CORR')
 
@@ -318,10 +300,10 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
             pairOpenPrice = row['OPEN_' + symbol_Pair]
             axis_lot_size, pair_lot_size, lot_size_diff = trade_util.get_lot_size(axisOpenPrice, pairOpenPrice)
 
-            if pairs.at[last_row_index, 'axis_A_long'] == 1 and lot_size_diff < MAX_OPEN_PRICE_DIFF:
+            if pairs.at[last_row_index, 'axis_A_long'] == 1 and lot_size_diff < setting.MAX_OPEN_PRICE_DIFF:
                 OPEN_CAT = 'BUY' # BUY AXIS COMBOL
 
-            elif pairs.at[last_row_index, 'axis_A_short'] == 1 and lot_size_diff < MAX_OPEN_PRICE_DIFF:
+            elif pairs.at[last_row_index, 'axis_A_short'] == 1 and lot_size_diff < setting.MAX_OPEN_PRICE_DIFF:
                 OPEN_CAT = 'SELL'
 
             if len(OPEN_CAT) > 0:
@@ -341,8 +323,7 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
     if len(portfolio_list) > 0:
         pd_portfolio_list = pd.DataFrame(portfolio_list)
         # print(pd_portfolio_list)
-        pd_portfolio_list.to_csv(os.path.join(data_dir, report_dir, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'),
-                                 encoding=FILE_ENCODING)
+        file_util.write_csv(pd_portfolio_list, os.path.join(setting.get_result_dir(), symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'))
 
         total_profit = round(pd_portfolio_list['PROFIT'].sum())
         average_profit = round(pd_portfolio_list['PROFIT'].mean())
@@ -350,6 +331,8 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
         total_times = pd_portfolio_list.shape[0]
         plus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] > 0].shape[0]
         minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
+        open_days = round(pd_portfolio_list['OPEN_DAYS'].mean())
+
 
     else:
         total_profit = 0
@@ -358,72 +341,82 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
         total_times = 0
         plus_times = 0
         minus_times = 0
+        open_days = 0
 
-    return total_profit, average_profit, average_pl,total_times, plus_times, minus_times
+    return total_profit, average_profit, average_pl, total_times, plus_times, minus_times, open_days
+
+def is_available_pari_data(pairs_data, symb1, symb2, corr_3m, corr_1y,  coint_3m, coint_1y, is_check_coint=True):
+
+    if (corr_3m < setting.CORR_THRE_SHOLD_THREE_MONTH or corr_1y < setting.CORR_THRE_SHOLD_ONE_YEAR):
+        return False
+
+    # if len(_pairs['CLOSE_' + symb1]) == 0 or len(_pairs['CLOSE_' + symb2]) == 0:
+    #     return False
+
+    axis_lot_size, pair_lot_size, lot_diff = trade_util.get_lot_size(pairs_data['CLOSE_' + symb1][0],
+                                                                     pairs_data['CLOSE_' + symb2][0])
+    if axis_lot_size == 1 or pair_lot_size == 1 or lot_diff == 1:
+        return False
+
+    if is_check_coint and (coint_3m > setting.COINT_MAX_VAL or coint_1y > setting.COINT_MAX_VAL):
+        return False
+
+    return True
 
 if __name__ == '__main__':
+    start_time = datetime.now()
     print('maint start ' + strftime("%Y-%m-%d %H:%M:%S"))
 
-    file_util.clean_target_dir(data_dir, report_dir)
+    file_util.clean_target_dir(setting.get_result_dir())
 
-    symbols = []
-    file_list = sorted(glob.glob(data_dir + '\*.csv'))
+    # get all target stock symbols
+    symbols = file_util.getAllTargetSymbols(setting.get_input_data_dir())
 
-    for file in file_list:
-        path, ext = os.path.splitext(os.path.basename(file))
-        symbols.append(path)
-
+    print('Total symbols size:' + str(len(symbols)))
+    index1 = 0
     symbols_corr_list=[]
     symbol_check_dict={}
-    print('Total symbols size:' + str(len(symbols)))
-    index1=0
+
     for symb1 in symbols:
         index1=index1+1
-        # index2=0
         print('Processing {0}/{1} {2}...'.format(index1, len(symbols), symb1))
         for symb2 in symbols:
             # index2 =index2+1
             #  print('Processing {0}/{1}/{2} {3}-{4}...'.format(index2,index1, len(symbols), symb1, symb2))
             if (symb1 == symb2 or (symb1 + symb2) in symbol_check_dict or (symb2 + symb1) in symbol_check_dict):
                 continue
+            symbol_check_dict[symb1 + symb2] = ''
 
-            _pairs = create_pairs_dataframe(data_dir, symb1, symb2)
-            corr1, corr2 = check_corr(_pairs, symb1, symb2)
-            # print('%s - %s 3M:%f 1Y:%f' % (symb1, symb2, corr1, cor
-            # r2))
+            _pairs = create_pairs_dataframe(setting.get_input_data_dir(), symb1, symb2)
+            corr_3m, corr_1y = trade_util.check_corr(_pairs, symb1, symb2)
 
-            symbol_check_dict[symb1 + symb2] =''
+            coint_3m, coint_1y = trade_util.check_cointegration(_pairs, symb1, symb2)
 
-            if (corr1 < CORR_THRE_SHOLD_THREE_MONTH or corr2 < CORR_THRE_SHOLD_ONE_YEAR):
+            if not is_available_pari_data(_pairs, symb1, symb2, corr_3m, corr_1y, coint_3m, coint_1y):
                 continue
 
-            if len(_pairs['CLOSE_'+ symb1]) == 0 or len(_pairs['CLOSE_'+ symb2]) == 0:
-                continue
-
-            axis_lot_size, pair_lot_size, lot_diff = trade_util.get_lot_size(_pairs['CLOSE_'+ symb1][0], _pairs['CLOSE_'+ symb2][0])
-            if axis_lot_size == 1 or pair_lot_size == 1 or lot_diff == 1:
-                continue
-
-            symbols_corr_list.append([symb1, symb2, corr1, corr2])
+            symbols_corr_list.append([symb1, symb2, corr_3m, corr_1y, coint_3m, coint_1y])
 
             _pairs = _pairs.sort_values('DATE', ascending=True)
             _pairs = calculate_spread_zscore(_pairs, symb1, symb2)
             _pairs = _pairs.sort_values('DATE', ascending=False)
-            _pairs.to_csv(os.path.join(data_dir, report_dir, symb1 + '_' + symb2 + '.csv'), encoding=FILE_ENCODING)
+
+            file_util.write_csv(_pairs, os.path.join(setting.get_result_dir(), symb1 + '_' + symb2 + '.csv'))
 
     #print(symbols_corr_list)
+
     corr_data=sorted(symbols_corr_list, key=itemgetter(2), reverse=True) # sort by 3 month corr
-    corr_data=pd.DataFrame(columns=['SYM_A', 'SYM_B', 'CORR_3M', 'CORR_1Y'], data=corr_data)
-    corr_data.to_csv(os.path.join(data_dir, report_dir, corr_result_file_name), encoding=FILE_ENCODING)
+    corr_data=pd.DataFrame(columns=['SYM_A', 'SYM_B', 'CORR_3M', 'CORR_1Y','COINT_3M', 'COINT_1Y'], data=corr_data)
+    # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
+    output_report(corr_data)
 
-    output_report()
+    process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
+    print('Time cost:{0}'.format(process_time))
 
     # signal_generate(_pairs, '9064','9505')
 
     #print chart
     #pairs_one_year = pairs[pairs.index > (datetime.today() - relativedelta(years=1))]
     #trade_util.print_chart(pairs_one_year, symbolA, symbolB)
-
-
