@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import os.path, time, numpy
+import os.path, time, numpy, sys
 import tradeutil as trade_util
 import fileutil as file_util
 import setting as setting
@@ -78,11 +78,14 @@ def output_report(corr_df):
     open_days_list = []
 
     with pd.ExcelWriter(report_file) as writer:
+        index1 = 0
         for index, row in corr_df.iterrows():
             # print('row.SYM_A:'+str(int(row.SYM_A)))
             symblA = str(int(row.SYM_A))
             symblB = str(int(row.SYM_B))
             #print('symblA=%s symblB=%s' % (symblA,symblB))
+            index1 = index1 + 1
+            print('Processing {0}/{1} {2} - {3}...'.format(index1, len(corr_df), symblA, symblB))
 
             try:
                 _file = os.path.join(setting.get_result_dir(), symblA + '_' + symblB + '.csv')
@@ -367,6 +370,12 @@ if __name__ == '__main__':
     start_time = datetime.now()
     print('maint start ' + strftime("%Y-%m-%d %H:%M:%S"))
 
+    isFastCaculateMode = False
+    args = sys.argv
+    if (len(args) >= 2 and (args[1] == 'fast' or args[1] == 'FAST')):
+        print('FAST CACULATE MODE')
+        isFastCaculateMode = True
+
     file_util.clean_target_dir(setting.get_result_dir())
 
     # get all target stock symbols
@@ -377,15 +386,14 @@ if __name__ == '__main__':
     symbols_corr_list=[]
     symbol_check_dict={}
 
-    for symb1 in symbols:
-        index1=index1+1
-        print('Processing {0}/{1} {2}...'.format(index1, len(symbols), symb1))
-        for symb2 in symbols:
-            # index2 =index2+1
-            #  print('Processing {0}/{1}/{2} {3}-{4}...'.format(index2,index1, len(symbols), symb1, symb2))
-            if (symb1 == symb2 or (symb1 + symb2) in symbol_check_dict or (symb2 + symb1) in symbol_check_dict):
-                continue
-            symbol_check_dict[symb1 + symb2] = ''
+    if (isFastCaculateMode == True):
+        _pais = file_util.read_csv(setting.get_currenty_report_file())
+
+        for index, row in _pais.iterrows():
+            index1 = index1 + 1
+            symb1 = str(int(row.SYM_A))
+            symb2 = str(int(row.SYM_B))
+            print('Processing {0}/{1} {2} - {3}...'.format(index1, len(_pais), symb1, symb2))
 
             _pairs = create_pairs_dataframe(setting.get_input_data_dir(), symb1, symb2)
             corr_3m, corr_1y = trade_util.check_corr(_pairs, symb1, symb2)
@@ -402,15 +410,41 @@ if __name__ == '__main__':
             _pairs = _pairs.sort_values('DATE', ascending=False)
 
             file_util.write_csv(_pairs, os.path.join(setting.get_result_dir(), symb1 + '_' + symb2 + '.csv'))
+    else:
+        for symb1 in symbols:
+            index1 = index1 + 1
+            print('Processing {0}/{1} {2}...'.format(index1, len(symbols), symb1))
+            for symb2 in symbols:
+                # index2 =index2+1
+                #  print('Processing {0}/{1}/{2} {3}-{4}...'.format(index2,index1, len(symbols), symb1, symb2))
+                if (symb1 == symb2 or (symb1 + symb2) in symbol_check_dict or (symb2 + symb1) in symbol_check_dict):
+                    continue
+                symbol_check_dict[symb1 + symb2] = ''
 
-    #print(symbols_corr_list)
+                _pairs = create_pairs_dataframe(setting.get_input_data_dir(), symb1, symb2)
+                corr_3m, corr_1y = trade_util.check_corr(_pairs, symb1, symb2)
 
-    corr_data=sorted(symbols_corr_list, key=itemgetter(2), reverse=True) # sort by 3 month corr
-    corr_data=pd.DataFrame(columns=['SYM_A', 'SYM_B', 'CORR_3M', 'CORR_1Y','COINT_3M', 'COINT_1Y'], data=corr_data)
+                coint_3m, coint_1y = trade_util.check_cointegration(_pairs, symb1, symb2)
+
+                if not is_available_pari_data(_pairs, symb1, symb2, corr_3m, corr_1y, coint_3m, coint_1y):
+                    continue
+
+                symbols_corr_list.append([symb1, symb2, corr_3m, corr_1y, coint_3m, coint_1y])
+
+                _pairs = _pairs.sort_values('DATE', ascending=True)
+                _pairs = calculate_spread_zscore(_pairs, symb1, symb2)
+                _pairs = _pairs.sort_values('DATE', ascending=False)
+
+                file_util.write_csv(_pairs, os.path.join(setting.get_result_dir(), symb1 + '_' + symb2 + '.csv'))
+
+        # print(symbols_corr_list)
+
+    corr_data = sorted(symbols_corr_list, key=itemgetter(2), reverse=True)  # sort by 3 month corr
+    corr_data = pd.DataFrame(columns=['SYM_A', 'SYM_B', 'CORR_3M', 'CORR_1Y', 'COINT_3M', 'COINT_1Y'],
+                             data=corr_data)
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
     output_report(corr_data)
-
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
     print('Time cost:{0}'.format(process_time))

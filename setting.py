@@ -31,3 +31,6 @@ def get_result_dir():
 
 def get_master_file_dir():
     return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'master.csv')
+
+def get_currenty_report_file():
+    return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'corr_result.csv')
