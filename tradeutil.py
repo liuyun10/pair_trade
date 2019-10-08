@@ -8,7 +8,7 @@ import statsmodels.tsa.stattools as ts
 
 def get_lot_size(axisPrice, pairPrice):
 
-    maxMount = 1000000
+    maxMount = 1100000
     # mixMount = 1000000
     min_lot_size = 100
 
