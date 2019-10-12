@@ -29,6 +29,9 @@ def get_input_data_dir():
 def get_result_dir():
     return  os.path.join(get_input_data_dir(), RESULT_FILE_DIR)
 
+def get_master_dir():
+    return os.path.join(get_input_data_dir(), MASTER_FILE_DIR)
+
 def get_master_file_dir():
     return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'master.csv')
 

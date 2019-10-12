@@ -43,7 +43,7 @@ def calculate_spread_zscore(pairs, symbol1, symbol2):
 
     return pairs
 
-def output_report(corr_df):
+def output_report(corr_df, isFastCaculateMode):
 
     print('Output Report Processing...')
     timestr = time.strftime("%Y%m%d-%H%M%S")
@@ -76,6 +76,10 @@ def output_report(corr_df):
     minus_times_list= []
     pl_times_list= []
     open_days_list = []
+    stop_profit_times_list = []
+    stop_loss_times_list = []
+    max_day_over_times_list = []
+
 
     with pd.ExcelWriter(report_file) as writer:
         index1 = 0
@@ -114,7 +118,8 @@ def output_report(corr_df):
                 LOT_SIZE_DIFF.append(lot_size_diff)
 
                 #print(_df)
-                total_profit, average_profit, average_pl,total_times, plus_times, minus_times, open_days = signal_generate(_df, symblA, symblB)
+                total_profit, average_profit, average_pl,total_times, plus_times, minus_times, open_days ,stop_profit_times, stop_loss_times,\
+                max_day_over_times = signal_generate(_df, symblA, symblB)
 
                 total_profit_list.append(total_profit)
                 average_profit_list.append(average_profit)
@@ -127,6 +132,10 @@ def output_report(corr_df):
                 else:
                     pl_times_list.append(round(plus_times/total_times*100, 2))
                 open_days_list.append(open_days)
+
+                stop_profit_times_list.append(stop_profit_times)
+                stop_loss_times_list.append(stop_loss_times)
+                max_day_over_times_list.append(max_day_over_times)
 
                 # path, ext = os.path.splitext(os.path.basename(_file))
                 #_df.to_excel(writer, sheet_name=path)
@@ -154,6 +163,10 @@ def output_report(corr_df):
                 minus_times_list.append(0)
                 pl_times_list.append(0)
                 open_days_list.append(0)
+
+                stop_profit_times_list.append(0)
+                stop_loss_times_list.append(0)
+                max_day_over_times_list.append(0)
                 continue
 
         corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
@@ -161,7 +174,8 @@ def output_report(corr_df):
                                          AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,LOT_SIZE_DIFF=LOT_SIZE_DIFF,
                                          total_profit=total_profit_list, average_profit=average_profit_list, average_pl=average_plt_list,
                                          total_times=total_times_list, plus_times=plus_times_list, minus_times=minus_times_list,
-                                         pl_times=pl_times_list, open_days=open_days_list)
+                                         pl_times=pl_times_list, open_days=open_days_list, stop_profit_times=stop_profit_times_list,
+                                         stop_loss_times=stop_loss_times_list, max_day_over_times=max_day_over_times_list)
         #print(corr_df_new)
         # corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
         corr_df_new = corr_df_new.sort_values('ABS_SIGMA', ascending=False)
@@ -170,9 +184,12 @@ def output_report(corr_df):
                   ['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY', 'OPEN_A','CLOSE_A','AXIS_LOT_SIZE','TRADE_A',
                    'SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY', 'OPEN_B','CLOSE_B','PAIR_LOT_SIZE','TRADE_B',
                    'CORR_3M','CORR_1Y', 'COINT_3M', 'COINT_1Y','SIGMA','ABS_SIGMA','DEV_RATE','LOT_SIZE_DIFF',
-                   'total_profit','average_profit','average_pl','total_times','plus_times','minus_times','pl_times', 'open_days']]
+                   'total_profit','average_profit','average_pl','total_times','plus_times','minus_times','pl_times', 'open_days',
+                   'stop_profit_times','stop_loss_times','max_day_over_times']]
 
         file_util.write_csv(corr_df_new, os.path.join(setting.get_result_dir(), 'corr_result.csv'))
+        if (isFastCaculateMode == False):
+            file_util.write_csv(corr_df_new, os.path.join(setting.get_master_dir(), 'corr_result.csv'))
 
         corr_df_new.to_excel(writer, sheet_name='CORR')
 
@@ -336,6 +353,9 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
         minus_times = pd_portfolio_list[pd_portfolio_list['PROFIT'] <= 0].shape[0]
         open_days = round(pd_portfolio_list['OPEN_DAYS'].mean())
 
+        stop_profit_times = pd_portfolio_list[pd_portfolio_list['CLOSE_CAT'] == 'STOP_PROFIT_OVER_RATIO'].shape[0]
+        stop_loss_times = pd_portfolio_list[pd_portfolio_list['CLOSE_CAT'] == 'STOP_LOSS_OVER_RATIO'].shape[0]
+        max_day_over_times = pd_portfolio_list[pd_portfolio_list['CLOSE_CAT'] == 'SL_MAX_DAY_OVER'].shape[0]
 
     else:
         total_profit = 0
@@ -345,8 +365,12 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
         plus_times = 0
         minus_times = 0
         open_days = 0
+        stop_profit_times = 0
+        stop_loss_times = 0
+        max_day_over_times = 0
 
-    return total_profit, average_profit, average_pl, total_times, plus_times, minus_times, open_days
+    return total_profit, average_profit, average_pl, total_times, plus_times, minus_times, open_days, \
+           stop_profit_times, stop_loss_times, max_day_over_times
 
 def is_available_pari_data(pairs_data, symb1, symb2, corr_3m, corr_1y,  coint_3m, coint_1y, is_check_coint=True):
 
@@ -444,7 +468,7 @@ if __name__ == '__main__':
                              data=corr_data)
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
-    output_report(corr_data)
+    output_report(corr_data, isFastCaculateMode)
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
     print('Time cost:{0}'.format(process_time))
