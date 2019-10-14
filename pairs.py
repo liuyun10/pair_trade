@@ -178,7 +178,7 @@ def output_report(corr_df, isFastCaculateMode):
                                          stop_loss_times=stop_loss_times_list, max_day_over_times=max_day_over_times_list)
         #print(corr_df_new)
         # corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
-        corr_df_new = corr_df_new.sort_values('ABS_SIGMA', ascending=False)
+        corr_df_new = corr_df_new.sort_values('total_profit', ascending=False)
 
         corr_df_new = corr_df_new.loc[:,
                   ['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY', 'OPEN_A','CLOSE_A','AXIS_LOT_SIZE','TRADE_A',
@@ -463,7 +463,7 @@ if __name__ == '__main__':
 
         # print(symbols_corr_list)
 
-    corr_data = sorted(symbols_corr_list, key=itemgetter(2), reverse=True)  # sort by 3 month corr
+    corr_data = sorted(symbols_corr_list, key=itemgetter(3), reverse=True)  # sort by 3 month corr
     corr_data = pd.DataFrame(columns=['SYM_A', 'SYM_B', 'CORR_3M', 'CORR_1Y', 'COINT_3M', 'COINT_1Y'],
                              data=corr_data)
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
