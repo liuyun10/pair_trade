@@ -198,7 +198,8 @@ def output_report(corr_df, isFastCaculateMode):
 
     print('Output Report Process end!')
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15, stop_loss_rate=-0.025, stop_profit_rate=0.025):
+def signal_generate(pairs, symbol_Axis, symbol_Pair, save_portfolio_file_path=setting.get_result_dir(), z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15,
+                    stop_loss_rate=-0.025, stop_profit_rate=0.025):
 
     isUseExitThreshold = False
     pairs = pairs.sort_values('DATE', ascending=True)
@@ -343,7 +344,7 @@ def signal_generate(pairs, symbol_Axis, symbol_Pair, z_entry_threshold=2, z_exit
     if len(portfolio_list) > 0:
         pd_portfolio_list = pd.DataFrame(portfolio_list)
         # print(pd_portfolio_list)
-        file_util.write_csv(pd_portfolio_list, os.path.join(setting.get_result_dir(), symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'))
+        file_util.write_csv(pd_portfolio_list, os.path.join(save_portfolio_file_path, symbol_Axis + '_' + symbol_Pair + '_portfolio.csv'))
 
         total_profit = round(pd_portfolio_list['PROFIT'].sum())
         average_profit = round(pd_portfolio_list['PROFIT'].mean())

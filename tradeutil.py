@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-from datetime import datetime
+from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import statsmodels.tsa.stattools as ts
@@ -164,14 +164,21 @@ def check_cointegration(pairs, symbol1, symbol2):
     # print "Computing Cointegration..."
     three_month_ago = datetime.today() - relativedelta(months=3)
     three_month_data = pairs[pairs.index > three_month_ago]
-    coin_result1 = ts.coint(three_month_data['CLOSE_'+symbol1], three_month_data['CLOSE_'+symbol2] )
+    coin_result1 = check_cointegration_common(three_month_data, symbol1, symbol2)
 
     one_year_ago = datetime.today() - relativedelta(years=1)
     one_year_data = pairs[pairs.index > one_year_ago]
-    coin_result2 = ts.coint(one_year_data['CLOSE_'+symbol1], one_year_data['CLOSE_'+symbol2] )
+    coin_result2 = check_cointegration_common(one_year_data, symbol1, symbol2)
 
     #Confidence Level chosen as 0.05 (5%)
     return coin_result1[1], coin_result2[1]
+
+def check_cointegration_common (pairs, symbol1, symbol2):
+    return ts.coint(pairs['CLOSE_'+symbol1], pairs['CLOSE_'+symbol2] )
+
+def date_span(start_date, end_date):
+    for n in range((end_date - start_date).days + 1):
+        yield start_date + timedelta(n)
 
 if __name__ == '__main__':
     result=get_lot_size(1401,2000)
