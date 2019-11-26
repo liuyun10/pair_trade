@@ -470,6 +470,8 @@ if __name__ == '__main__':
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
     output_report(corr_data, isFastCaculateMode)
+
+
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
     print('Time cost:{0}'.format(process_time))

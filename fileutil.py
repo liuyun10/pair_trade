@@ -22,6 +22,8 @@ def read_csv(file_full_path):
 def write_csv(data, file_full_path):
     data.to_csv(file_full_path, encoding=FILE_ENCODING)
 
+def write_csv_without_index_header(data, file_full_path):
+    data.to_csv(file_full_path, encoding=FILE_ENCODING, header=False, index=False)
 
 def getAllTargetSymbols(input_data_dir):
     symbols = []
