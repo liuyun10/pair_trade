@@ -171,7 +171,10 @@ def generate_backtest_report(caculated_csv_path = caculated_csv_dir, portfolio_c
 
     for target_date in tu.date_span(start_date, end_date):
         print(target_date)
-        generate_day_report(target_date, file_name_list)
+
+        weekno = target_date.weekday()
+        if weekno < 5:
+            generate_day_report(target_date, file_name_list)
 
     print('generate_backtest_report end ' + strftime("%Y-%m-%d %H:%M:%S"))
 
@@ -184,6 +187,11 @@ def generate_day_report(target_date, file_name_list):
     day_report_data = pd.DataFrame()
 
     for file_name in file_name_list:
+
+        _temp = file_name.split('_')
+        symb1 = _temp[0]
+        symb2 = _temp[1]
+
         pairs_data = ft.read_csv(os.path.join(caculated_csv_dir, file_name + '.csv'))
         pairs_data['DATE'] = pd.to_datetime(pairs_data['DATE'])
         pairs_data.index = pairs_data['DATE']
@@ -192,32 +200,30 @@ def generate_day_report(target_date, file_name_list):
             # print('empty {0}'.format(target_date))
             return
 
-
-        _temp = file_name.split('_')
-        symb1 = _temp[0]
-        symb2 = _temp[1]
-        search_data.rename(columns={'OPEN_'+ symb1: 'OPEN_A', 'CLOSE_'+ symb1: 'CLOSE_A',
+        search_data1 = search_data.copy(deep=True)
+        search_data1.rename(columns={'OPEN_'+ symb1: 'OPEN_A', 'CLOSE_'+ symb1: 'CLOSE_A',
                                                   'OPEN_'+ symb2: 'OPEN_B', 'CLOSE_'+ symb2: 'CLOSE_B'}, inplace=True)
 
-        search_data['SYM_A'] = symb1
-        search_data['SYM_B'] = symb2
+        search_data1['SYM_A'] = symb1
+        search_data1['SYM_B'] = symb2
 
-        search_data = search_data.loc[:,
+        search_data1 = search_data1.loc[:,
                  ['SYM_A', 'OPEN_A', 'CLOSE_A', 'SYM_B', 'OPEN_B', 'CLOSE_B',
                   'saya_divide', 'saya_divide_mean', 'saya_divide_std', 'saya_divide_sigma',
                   'deviation_rate(%)', 'CORR_3M', 'COINT_3M', 'CORR_1Y', 'COINT_1Y']]
 
-        if search_data.at[target_date, 'CORR_3M'] < CORR_THRE_SHOLD_THREE_MONTH \
+        if search_data1.at[target_date, 'CORR_3M'] < CORR_THRE_SHOLD_THREE_MONTH \
                 or search_data.at[target_date, 'CORR_1Y'] < CORR_THRE_SHOLD_ONE_YEAR:
             continue
 
-        if search_data.at[target_date, 'COINT_3M'] > COINT_MAX_VAL \
+        if search_data1.at[target_date, 'COINT_3M'] > COINT_MAX_VAL \
             or search_data.at[target_date, 'COINT_1Y'] > COINT_MAX_VAL:
             continue
 
-        day_report_data = day_report_data.append(search_data)
+        day_report_data = day_report_data.append(search_data1)
 
-    ft.write_csv(day_report_data, day_report_file_name)
+    if not day_report_data.empty:
+        ft.write_csv(day_report_data, day_report_file_name)
 
 def main():
 
