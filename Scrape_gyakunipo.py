@@ -58,9 +58,11 @@ def output(table):
     file_util.write_csv_without_index_header(df, os.path.join(setting.get_master_dir(), 'gyakunipo_data.csv'))
 
 def main():
+    print('Gyakunipo data start!')
     html= BeautifulSoup(simple_get(url), 'html.parser')
     table = html.find('table', attrs={'width':'600px', 'bordercolor':'#AAB5BB'})
     output(table)
+    print('Gyakunipo data end!')
 
 if __name__ == '__main__':
     main()

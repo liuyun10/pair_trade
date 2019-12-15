@@ -58,9 +58,11 @@ def output(table):
     file_util.write_csv_without_index_header(df, os.path.join(setting.get_master_dir(), 'fiscal_data.csv'))
 
 def main():
+    print('Scrape fiscal data start!')
     html= BeautifulSoup(simple_get(url), 'html.parser')
     table = html.find('table', attrs={'bordercolor':'#AAB5BB', 'width':'600'})
     output(table)
+    print('Scrape fiscal data end!')
 
 if __name__ == '__main__':
     main()

@@ -8,6 +8,8 @@ import setting as setting
 from datetime import datetime
 from operator import itemgetter
 from time import strftime
+import Scrape_fiscal_data as get_fiscal
+import Scrape_gyakunipo as get_gyakunipo
 
 pd.set_option('display.max_columns', None)
 corr_result_file_name='corr.csv'
@@ -197,10 +199,7 @@ def output_report(corr_df, isFastCaculateMode):
         file_util.write_csv(corr_df_new, os.path.join(setting.get_master_dir(), 'corr_result.csv'))
 
     # with pd.ExcelWriter(report_file) as writer:
-
-
-
-        #corr_df_new.to_excel(writer, sheet_name='CORR')
+    #corr_df_new.to_excel(writer, sheet_name='CORR')
 
     #writer.save()
     #writer.close()
@@ -420,6 +419,9 @@ if __name__ == '__main__':
     symbols_corr_list=[]
     symbol_check_dict={}
 
+    get_fiscal.main()
+    get_gyakunipo.main()
+
     if (isFastCaculateMode == True):
         _pais = file_util.read_csv(setting.get_currenty_report_file())
 
@@ -479,7 +481,6 @@ if __name__ == '__main__':
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
     output_report(corr_data, isFastCaculateMode)
-
 
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
