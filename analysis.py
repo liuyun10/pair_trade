@@ -51,10 +51,6 @@ def main(targetYM=None):
 def cacluate_needed_data(symb1, symb2, csv_file_full_path):
 
     _pairs = pairs.create_pairs_dataframe(setting.get_input_data_dir(), symb1, symb2)
-    print(symb1)
-    print(symb2)
-    print(_pairs)
-    print(csv_file_full_path)
     _pairs = _pairs.sort_values('DATE', ascending=True)
     _pairs = pairs.calculate_spread_zscore(_pairs, symb1, symb2)
 
