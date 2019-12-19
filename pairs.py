@@ -10,6 +10,7 @@ from operator import itemgetter
 from time import strftime
 import Scrape_fiscal_data as get_fiscal
 import Scrape_gyakunipo as get_gyakunipo
+import analysis
 
 pd.set_option('display.max_columns', None)
 corr_result_file_name='corr.csv'
@@ -481,6 +482,9 @@ if __name__ == '__main__':
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
     output_report(corr_data, isFastCaculateMode)
+
+    # caculate the data of open position and history trade
+    analysis.main()
 
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
