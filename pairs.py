@@ -64,6 +64,7 @@ def output_report(corr_df, isFastCaculateMode):
     CLOSE_B_list = []
     SIGMA=[]
     ABS_SIGMA = []
+    LAST_DAY_SIGMA = []
     TRADE_A = []
     TRADE_B = []
     DEV_RATE=[]
@@ -102,6 +103,7 @@ def output_report(corr_df, isFastCaculateMode):
             CLOSE_B_list.append(_df['CLOSE_' + symblB][0])
             SIGMA.append(_df['saya_divide_sigma'][0])
             ABS_SIGMA.append(np.abs(_df['saya_divide_sigma'][0]))
+            LAST_DAY_SIGMA.append(np.abs(_df['saya_divide_sigma'][1]))
 
             if (_df['saya_divide_sigma'][0] > 0):
                 TRADE_A.append("SELL")
@@ -149,6 +151,7 @@ def output_report(corr_df, isFastCaculateMode):
             CLOSE_B_list.append(0)
             SIGMA.append(0)
             ABS_SIGMA.append(0)
+            LAST_DAY_SIGMA.append(0)
             DEV_RATE.append(0)
             AXIS_LOT_SIZE.append(0)
             PAIR_LOT_SIZE.append(0)
@@ -172,8 +175,8 @@ def output_report(corr_df, isFastCaculateMode):
             continue
 
     corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
-                                     CLOSE_B=CLOSE_B_list, SIGMA=SIGMA, ABS_SIGMA=ABS_SIGMA, TRADE_A=TRADE_A,
-                                     TRADE_B=TRADE_B, DEV_RATE=DEV_RATE,
+                                     CLOSE_B=CLOSE_B_list, SIGMA=SIGMA, ABS_SIGMA=ABS_SIGMA, LAST_DAY_SIGMA=LAST_DAY_SIGMA,
+                                     TRADE_A=TRADE_A,TRADE_B=TRADE_B, DEV_RATE=DEV_RATE,
                                      AXIS_LOT_SIZE=AXIS_LOT_SIZE, PAIR_LOT_SIZE=PAIR_LOT_SIZE,
                                      LOT_SIZE_DIFF=LOT_SIZE_DIFF,
                                      total_profit=total_profit_list, average_profit=average_profit_list,
@@ -190,7 +193,7 @@ def output_report(corr_df, isFastCaculateMode):
     corr_df_new = corr_df_new.loc[:,
                   ['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY', 'OPEN_A', 'CLOSE_A', 'AXIS_LOT_SIZE', 'TRADE_A',
                    'SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY', 'OPEN_B', 'CLOSE_B', 'PAIR_LOT_SIZE', 'TRADE_B',
-                   'CORR_3M', 'CORR_1Y', 'COINT_3M', 'COINT_1Y', 'SIGMA', 'ABS_SIGMA', 'DEV_RATE', 'LOT_SIZE_DIFF',
+                   'CORR_3M', 'CORR_1Y', 'COINT_3M', 'COINT_1Y', 'SIGMA', 'ABS_SIGMA', 'LAST_DAY_SIGMA','DEV_RATE', 'LOT_SIZE_DIFF',
                    'total_profit', 'average_profit', 'average_pl', 'total_times', 'plus_times', 'minus_times',
                    'pl_times', 'open_days',
                    'stop_profit_times', 'stop_loss_times', 'max_day_over_times']]

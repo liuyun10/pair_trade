@@ -6,8 +6,8 @@ import fileutil as ft
 from dateutil.relativedelta import relativedelta
 
 excel_file_name = 'pair_trade.xlsm'
-sheet_name_history = '取引履歴'
-sheet_name_open_position = '建玉管理'
+sheet_name_history = 'Open Position'
+sheet_name_open_position = 'Trade History'
 
 def main(targetYear=None, targetMonth=None):
     print('Aalysis main start!')
