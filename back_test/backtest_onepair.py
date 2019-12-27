@@ -6,10 +6,10 @@ import pathlib
 import logging
 from datetime import datetime
 
-from .ptstrategy_distance import DistStrategy
-from .util.grid_search_tools import GSTools
-from .util.log_helper import LogHelper
-from .util.custom_analyzer import Metrics
+from back_test.ptstrategy_distance import DistStrategy
+from back_test.util.grid_search_tools import GSTools
+from back_test.util.log_helper import LogHelper
+from back_test.util.custom_analyzer import Metrics
 
 ##################################################################################################
 # Define parameters                                                                              #
@@ -31,13 +31,13 @@ parser.add_argument("--backtest_start", type=str, default="2018-01-01",
                     help="Start date of backtest.")
 parser.add_argument("--backtest_end", type=str, default="2018-12-31",
                     help="End date of backtest.")
-parser.add_argument("--lookback", default=50, type=int, 
+parser.add_argument("--lookback", default=75, type=int,
                     help="Lookback value to be tested. Only useful if strategy is distance or cointegration.")
 parser.add_argument("--enter_threshold", default=2.0, type=float, 
                     help="Enter threshold value to be tested (in units 'number of SD from mean').")
 parser.add_argument("--exit_threshold", default=0.5, type=float, 
                     help="Exit threshold value to be tested (in units 'number of SD from mean').")
-parser.add_argument("--loss_limit", default=-0.5, type=float, 
+parser.add_argument("--loss_limit", default=-0.05, type=float,
                     help="Position will exit if loss exceeded this loss limit.")
 parser.add_argument("--loss_limit_max_days", default=15, type=float,
                     help="Position will exit if loss exceeded this max openning day limit.")
@@ -84,13 +84,13 @@ def main():
         pre_backtest_size = config.kalman_estimation_length
     
     # select segment of data that we want
-    data0, data1 = data[symbo1].set_index("date"), data[symbo2].set_index("date")
+    data0, data1 = data[symbo1].set_index("DATE"), data[symbo2].set_index("DATE")
 
-    data0 = data0.sort_values('date', ascending=True)
-    data1 = data1.sort_values('date', ascending=True)
+    data0 = data0.sort_values('DATE', ascending=True)
+    data1 = data1.sort_values('DATE', ascending=True)
 
     start_date_dt = datetime.strptime(config.backtest_start, "%Y-%m-%d").date()
-    end_date_dt = datetime.strptime(config.backtest_end, "%Y-%m-%d").date() 
+    end_date_dt = datetime.strptime(config.backtest_end, "%Y-%m-%d").date()
     
     data0 = data0[ : start_date_dt].tail(pre_backtest_size).append(data0[start_date_dt : end_date_dt])
     data1 = data1[ : start_date_dt].tail(pre_backtest_size).append(data1[start_date_dt : end_date_dt])

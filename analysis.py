@@ -6,8 +6,8 @@ import fileutil as ft
 from dateutil.relativedelta import relativedelta
 
 excel_file_name = 'pair_trade.xlsm'
-sheet_name_history = 'Open Position'
-sheet_name_open_position = 'Trade History'
+sheet_name_history = 'Trade History'
+sheet_name_open_position = 'Open Position'
 
 def main(targetYear=None, targetMonth=None):
     print('Aalysis main start!')
@@ -15,6 +15,8 @@ def main(targetYear=None, targetMonth=None):
     workbook = openpyxl.load_workbook(file_name, data_only=True)
     sheet = workbook[sheet_name_history]
     record_list = []
+
+    ft.clean_target_dir(os.path.join(setting.get_input_data_dir(), 'trade', 'open'))
     for i in range(4, sheet.max_row + 1, 2):
         record = TradeRecord()
         year = sheet.cell(row=i, column=27).value

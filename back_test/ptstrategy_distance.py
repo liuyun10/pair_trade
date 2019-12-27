@@ -53,8 +53,8 @@ class DistStrategy(PTStrategy):
         PTStrategy.log("[strategy-status]: {}".format(status_dict), None, self.data0)
 
     def update_enter_exit_levels(self):
-        Y = pd.Series(self.data0.get(size=self.lookback, ago=-1)) # modify ago form 1 to -1
-        X = pd.Series(self.data1.get(size=self.lookback, ago=-1)) # modify ago form 1 to -1
+        Y = pd.Series(self.data0.get(size=self.lookback, ago=0)) # modify ago form 1 to 0
+        X = pd.Series(self.data1.get(size=self.lookback, ago=0)) # modify ago form 1 to 0
 
         self.spread_mean = (Y - X).mean()
         self.spread_std = (Y - X).std()

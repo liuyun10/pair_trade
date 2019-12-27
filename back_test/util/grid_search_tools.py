@@ -32,7 +32,7 @@ class GSTools(object):
 
 			# read the csv file as dataframe
 			df = pd.read_csv(path)
-			df['date'] = pd.to_datetime(df['date'], format='%Y-%m-%d %H:%M:%S')
+			df['DATE'] = pd.to_datetime(df['DATE'], format='%Y-%m-%d %H:%M:%S')
 			data[filename_without_ext] = df 
 
 		return data
@@ -50,7 +50,7 @@ class GSTools(object):
 			# reset index 
 			data[key] = data[key].reset_index(drop=True)
 
-			dates = dates.union(pd.Index(data[key]['date']))
+			dates = dates.union(pd.Index(data[key]['DATE']))
 
 		return dates
 
@@ -70,12 +70,12 @@ class GSTools(object):
 			data[key] = data[key].reset_index(drop=True)
 
 			# max
-			MAX_START_DATE = max(MAX_START_DATE, data[key]['date'].iloc[0])
-			MIN_END_DATE = min(MIN_END_DATE, data[key]['date'].iloc[-1])
+			MAX_START_DATE = max(MAX_START_DATE, data[key]['DATE'].iloc[0])
+			MIN_END_DATE = min(MIN_END_DATE, data[key]['DATE'].iloc[-1])
 
 		# take subset of all dataframes
 		for key in data.keys():
-			mask = (data[key]['date'] >= MAX_START_DATE) & (data[key]['date'] <= MIN_END_DATE)
+			mask = (data[key]['DATE'] >= MAX_START_DATE) & (data[key]['DATE'] <= MIN_END_DATE)
 			data[key] = data[key].loc[mask]
 
 			# reset index 
@@ -131,6 +131,6 @@ class GSTools(object):
 
 		for key in data.keys():
 			agg_df[key] = data[key][col]
-			agg_df["date"] = data[key]["date"]
+			agg_df["DATE"] = data[key]["DATE"]
 
 		return agg_df
