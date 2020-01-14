@@ -30,6 +30,10 @@ def main(targetYear=None, targetMonth=None):
 
     open_position_sheet = workbook[sheet_name_open_position]
     for i in range(4, open_position_sheet.max_row + 1, 2):
+
+        if (open_position_sheet.cell(row = i, column= 6).value is None):
+            break
+
         record = TradeRecord()
         record.sellCode = str(open_position_sheet.cell(row = i, column= 6).value)
         record.buyCode = str(open_position_sheet.cell(row = i + 1, column= 6).value)
