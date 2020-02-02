@@ -398,7 +398,7 @@ def is_available_pari_data(pairs_data, symb1, symb2, corr_3m, corr_1y,  coint_3m
     if axis_lot_size == 1 or pair_lot_size == 1 or lot_diff == 1:
         return False
 
-    if is_check_coint and (coint_3m > setting.COINT_MAX_VAL or coint_1y > setting.COINT_MAX_VAL):
+    if is_check_coint and (coint_3m > setting.COINT_MAX_VAL_THREE_MONTH or coint_1y > setting.COINT_MAX_VAL_ONE_YEAR):
         return False
 
     return True
