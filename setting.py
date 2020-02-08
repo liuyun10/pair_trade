@@ -13,13 +13,13 @@ report_file_name='report'
 SAYA_MEAN_WINDOW=75
 
 # the threshold of corr
-CORR_THRE_SHOLD_THREE_MONTH=0.8
+CORR_THRE_SHOLD_THREE_MONTH=0.5
 CORR_THRE_SHOLD_ONE_YEAR=0.8
 
 # the threshold of coint
 # p-value
-COINT_MAX_VAL_THREE_MONTH=0.6
-COINT_MAX_VAL_ONE_YEAR=0.4
+COINT_MAX_VAL_THREE_MONTH=0.5
+COINT_MAX_VAL_ONE_YEAR=0.1
 
 #For back test (max open oprice diff)
 MAX_OPEN_PRICE_DIFF=10
