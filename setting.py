@@ -1,7 +1,7 @@
 import os
 
 input_data_dir='G:\Stock\pairs_trade\pair_trade\stock_data'
-#input_data_dir='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
+input_data_dir_test='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
 
 RESULT_FILE_DIR='result'
 MASTER_FILE_DIR='master'
@@ -27,6 +27,9 @@ MAX_OPEN_PRICE_DIFF=10
 def get_input_data_dir():
     return input_data_dir
 
+def get_input_test_data_dir():
+    return input_data_dir_test
+
 def get_result_dir():
     return  os.path.join(get_input_data_dir(), RESULT_FILE_DIR)
 
@@ -38,3 +41,6 @@ def get_master_file_dir():
 
 def get_currenty_report_file():
     return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'corr_result.csv')
+
+def get_ignore_file_full_path():
+    return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'ignore_symbols.txt')

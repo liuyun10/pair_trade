@@ -1,5 +1,6 @@
 import shutil,os,glob
 import pandas as pd
+import setting
 
 FILE_ENCODING='shift_jis'
 def clean_target_dir(target_dir):
@@ -28,10 +29,24 @@ def write_csv_without_index_header(data, file_full_path):
 def getAllTargetSymbols(input_data_dir):
     symbols = []
     file_list = sorted(glob.glob(input_data_dir + '\*.csv'))
+    ignore_list = getIgnoreSymbolList()
+
     for file in file_list:
         path, ext = os.path.splitext(os.path.basename(file))
-        symbols.append(path)
+        if path not in ignore_list:
+            symbols.append(path)
     return symbols
 
 def is_file_exists(fullpath):
     return os.path.isfile(fullpath)
+
+def getIgnoreSymbolList():
+    file1 = open(setting.get_ignore_file_full_path(), 'r')
+    result_list = []
+
+    for line in file1.readlines():
+        result_list.append(line.rstrip('\n'))
+    return result_list
+
+if __name__ == '__main__':
+    print(getAllTargetSymbols(setting.get_input_test_data_dir()))
