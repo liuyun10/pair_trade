@@ -26,6 +26,9 @@ def write_csv(data, file_full_path):
 def write_csv_without_index_header(data, file_full_path):
     data.to_csv(file_full_path, encoding=FILE_ENCODING, header=False, index=False)
 
+def write_csv_without_index(data, file_full_path):
+    data.to_csv(file_full_path, encoding=FILE_ENCODING, header=True, index=False)
+
 def getAllTargetSymbols(input_data_dir):
     symbols = []
     file_list = sorted(glob.glob(input_data_dir + '\*.csv'))
