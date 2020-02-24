@@ -3,8 +3,50 @@ import setting, os, pairs
 import pandas as pd
 import pair_back_test
 import fileutil as ft
-
+import argparse
+excel_file_full_path = setting.get_trade_excel_full_path()
 output_csv_file_full_path = os.path.join(setting.get_master_dir(),  "trade_history.csv")
+
+##################################################################################################
+# Default parameters                                                                              #
+##################################################################################################
+# Other exit condition
+EXIT_MAX_OPEN_DAYS=15
+# Stop Loss
+EXIT_stop_loss_rate=-0.025 # total 2.5%
+# Stop Profit
+EXIT_stop_profit_rate=0.025 # total 2.5%
+# Zero Loss
+# 0: exit positon when totalreturn(yesterday) > 0 and totalreturn(today) < totalreturn(yesterday)
+# 1:  exit positon when totalreturn(yesterday) > 0.01 and totalreturn(today) < totalreturn(yesterday)
+EXIT_ZERO_LOSS_CONDITION = None
+
+EXIT_threshold_when_plus_sigma = None
+EXIT_threshold_when_minus_sigma = None
+##################################################################################################
+# Define parameters                                                                              #
+##################################################################################################
+parser = argparse.ArgumentParser()
+parser.add_argument("--trade_data_path", type=str, default="./stock_data/trade/",
+                    help="Path to trade stock price data")
+# parser.add_argument("--output_dir", type=str, default="./data/output/", help="Path to output directory.")
+parser.add_argument("--backtest_start_ym", type=str, default=None,
+                    help="Start date YM(close) of backtest. e.g. 201911")
+parser.add_argument("--backtest_end_ym", type=str, default=None,
+                    help="End date YM(close) of backtest. e.g. 202111")
+parser.add_argument("--zero_loss_strategy_type", default=EXIT_ZERO_LOSS_CONDITION, type=str, choices=["None", "0", "1", "2"],
+                    help="Type of zeor loss strategy used.")
+parser.add_argument("--exit_threshold_when plus_sigma", default=EXIT_threshold_when_plus_sigma, type=str,
+                    help="Exit threshold value to be tested (in units 'number of SD from mean').")
+parser.add_argument("--exit_threshold_when minux_sigma", default=EXIT_threshold_when_minus_sigma, type=str,
+                    help="Exit threshold value to be tested (in units 'number of SD from mean').")
+parser.add_argument("--stop_profit_limit", default=EXIT_stop_profit_rate, type=float,
+                    help="Position will exit if total 2 pairs profit exceeded this loss limit.")
+parser.add_argument("--stop_loss_limit", default=EXIT_stop_loss_rate, type=float,
+                    help="Position will exit if total 2 pairs loss exceeded this loss limit.")
+parser.add_argument("--loss_limit_max_days", default=EXIT_MAX_OPEN_DAYS, type=str,
+                    help="Position will exit if loss exceeded this max openning day limit.")
+config = parser.parse_args()
 
 def main():
     output_trade_history_to_csv()
@@ -13,11 +55,13 @@ def main():
 def cacluate_trade_result():
     trade_history_data = ft.read_csv(output_csv_file_full_path)
     print(trade_history_data)
+    #print(config)
+
 
 
 def output_trade_history_to_csv():
 
-    workbook = openpyxl.load_workbook(setting.get_trade_excel_full_path(), data_only=True)
+    workbook = openpyxl.load_workbook(excel_file_full_path, data_only=True)
     sheet = workbook[setting.sheet_name_history]
 
     data_list = []
