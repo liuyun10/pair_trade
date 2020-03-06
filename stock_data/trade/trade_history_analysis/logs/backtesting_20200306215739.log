@@ -1,0 +1,12 @@
+2020-03-06 21:57:39,380 INFO - log_helper - Finished configuring logger
+2020-03-06 21:57:39,381 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ym': None, 'backtest_end_ym': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.025, 'stop_loss_limit': -0.025, 'loss_limit_max_days': 15, 'clear_all_analysis_data': False}
+2020-03-06 21:57:44,244 ERROR - __main__ - No target csv file exists. 6457 - 6925...2020/3...G:\Stock\pairs_trade\pair_trade\stock_data\trade\2020\3\6457_6925.csv
+2020-03-06 21:57:44,245 CRITICAL - log_helper - Unhandled exception
+Traceback (most recent call last):
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 319, in <module>
+    main()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 69, in main
+    generate_trade_result()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 90, in generate_trade_result
+    search_data = trade_data.loc[trade_data['DATE'] >= row.open_date]
+AttributeError: 'NoneType' object has no attribute 'loc'

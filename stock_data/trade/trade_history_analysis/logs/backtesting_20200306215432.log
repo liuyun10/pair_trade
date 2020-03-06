@@ -1,0 +1,13 @@
+2020-03-06 21:54:32,202 INFO - log_helper - Finished configuring logger
+2020-03-06 21:54:32,204 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ym': None, 'backtest_end_ym': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.025, 'stop_loss_limit': -0.025, 'loss_limit_max_days': 15, 'clear_all_analysis_data': False}
+2020-03-06 21:54:36,054 CRITICAL - log_helper - Unhandled exception
+Traceback (most recent call last):
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 319, in <module>
+    main()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 69, in main
+    generate_trade_result()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 91, in generate_trade_result
+    result_row = generate_result(search_data, sellCode, buytCode, row)
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_analysis.py", line 148, in generate_result
+    result_row['close_date'] = index
+TypeError: 'method' object does not support item assignment

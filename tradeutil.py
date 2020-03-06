@@ -80,11 +80,32 @@ def get_trade_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size):
 
     return axis_commission + pair_commission
 
+def get_trade_commission(price, mount):
+
+    tax_rate = 0.1
+    totalMount = price * mount
+
+    if totalMount > 500000:
+        commission = 350
+    else:
+        commission =180
+
+    return commission * 2 * (1 + tax_rate)
+
+#for sell position
+def get_credit_commission_for_sell_position(price, mount, open_days):
+    rate = 0.011
+    return price * mount * rate / 365 * open_days
+
+#for buy position
+def get_credit_commission_for_buy_position(price, mount, open_days):
+    rate = 0.028
+    return price * mount * rate / 365 * open_days
+
 #信用取引手数料
 def get_credit_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size, open_days):
 
     credit_rate=0.03
-
     axis_comm = axisPrice * axis_lot_size * credit_rate /365 * open_days
     pair_comm = pairPrice * pair_lot_size * credit_rate / 365 * open_days
 

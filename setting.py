@@ -5,6 +5,7 @@ input_data_dir_test='G:\Stock\pairs_trade\pair_trade\stock_data\\test'
 
 RESULT_FILE_DIR='result'
 MASTER_FILE_DIR='master'
+TRADE_FILE_DIR='trade'
 FILE_ENCODING='shift_jis'
 
 corr_result_file_name='corr.csv'
@@ -44,6 +45,12 @@ def get_result_dir():
 
 def get_master_dir():
     return os.path.join(get_input_data_dir(), MASTER_FILE_DIR)
+
+def get_trade_dir():
+    return os.path.join(get_input_data_dir(), TRADE_FILE_DIR)
+
+def get_trade_history_analysis_dir():
+    return os.path.join(get_trade_dir(), 'trade_history_analysis')
 
 def get_master_file_dir():
     return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'master.csv')
