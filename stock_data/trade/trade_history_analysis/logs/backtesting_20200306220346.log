@@ -1,4 +1,0 @@
-2020-03-06 22:03:46,829 INFO - log_helper - Finished configuring logger
-2020-03-06 22:03:46,830 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ym': None, 'backtest_end_ym': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.025, 'stop_loss_limit': -0.025, 'loss_limit_max_days': 15, 'clear_all_analysis_data': False}
-2020-03-06 22:03:51,179 ERROR - __main__ - No target csv file exists. 6457 - 6925...2020/3...G:\Stock\pairs_trade\pair_trade\stock_data\trade\2020\3\6457_6925.csv
-2020-03-06 22:03:51,179 ERROR - __main__ - No target csv file exists. 8316 - 8385...2020/3...G:\Stock\pairs_trade\pair_trade\stock_data\trade\2020\3\8316_8385.csv

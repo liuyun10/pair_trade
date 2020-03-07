@@ -80,7 +80,7 @@ def get_trade_commission(axisPrice, pairPrice, axis_lot_size, pair_lot_size):
 
     return axis_commission + pair_commission
 
-def get_trade_commission(price, mount):
+def get_trade_commission2(price, mount):
 
     tax_rate = 0.1
     totalMount = price * mount

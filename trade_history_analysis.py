@@ -132,56 +132,56 @@ def generate_result(search_data, sellCode, buyCode, history_row):
         elif(open_days > config.loss_limit_max_days):
             trade_result = 'OVER MAX DAY'
 
-        buyTradeFee = tradeutil.get_trade_commission(buyOpenPrice, buyMount)
-        sellTradeFee = tradeutil.get_trade_commission(sellOpenPrice, sellMount)
+        buyTradeFee = tradeutil.get_trade_commission2(buyOpenPrice, buyMount)
+        sellTradeFee = tradeutil.get_trade_commission2(sellOpenPrice, sellMount)
         buyCreditFee = tradeutil.get_credit_commission_for_buy_position(buyOpenPrice, buyMount, open_days)
         sellCreditFee = tradeutil.get_credit_commission_for_sell_position(sellOpenPrice, sellMount, open_days)
 
-    if (len(trade_result) > 0):
-        # close position when next day opening
-        sellNowOpenPrice = row['OPEN_' + sellCode]
-        buyNowOpenPrice = row['OPEN_' + buyCode]
+        if (len(trade_result) > 0):
+            # close position when next day opening
+            sellNowOpenPrice = row['OPEN_' + sellCode]
+            buyNowOpenPrice = row['OPEN_' + buyCode]
 
-        totalReturn = (buyNowOpenPrice - buyOpenPrice) * buyMount + (sellOpenPrice - sellNowOpenPrice) * sellMount
-        totalReturn = totalReturn - buyTradeFee - sellTradeFee - buyCreditFee - sellCreditFee
-        totalReturn = totalReturn - buyOtherFee - sellOtherFee
-        totalReturnRate = totalReturn / totalMount
+            totalReturn = (buyNowOpenPrice - buyOpenPrice) * buyMount + (sellOpenPrice - sellNowOpenPrice) * sellMount
+            totalReturn = totalReturn - buyTradeFee - sellTradeFee - buyCreditFee - sellCreditFee
+            totalReturn = totalReturn - buyOtherFee - sellOtherFee
+            totalReturnRate = totalReturn / totalMount
 
-        result_row['close_date'] = index
-        result_row['sellClosePrice'] = sellNowOpenPrice
-        result_row['buyClosePrice'] = buyNowOpenPrice
-        result_row['totalReturn'] = totalReturn
-        result_row['totalReturnRate'] = totalReturnRate
-        result_row['open_days'] = open_days
-        result_row['result'] = trade_result
+            result_row['close_date'] = index
+            result_row['sellClosePrice'] = sellNowOpenPrice
+            result_row['buyClosePrice'] = buyNowOpenPrice
+            result_row['totalReturn'] = totalReturn
+            result_row['totalReturnRate'] = totalReturnRate
+            result_row['open_days'] = open_days
+            result_row['result'] = trade_result
 
-        result_row['buyTradeFee'] = buyTradeFee
-        result_row['buyInterestFee'] = buyCreditFee
-        result_row['sellTradeFee'] = sellTradeFee
-        result_row['sellInterestFee'] = sellCreditFee
-        return result_row
+            result_row['buyTradeFee'] = buyTradeFee
+            result_row['buyInterestFee'] = buyCreditFee
+            result_row['sellTradeFee'] = sellTradeFee
+            result_row['sellInterestFee'] = sellCreditFee
+            return result_row
 
-    sellNowClosePrice = row['CLOSE_' + sellCode]
-    buyNowClosePrice = row['CLOSE_' + buyCode]
-    now_return =  (buyNowClosePrice - buyOpenPrice) * buyMount + (sellOpenPrice - sellNowClosePrice) * sellMount
-    now_return = now_return - buyTradeFee - sellTradeFee - buyCreditFee - sellCreditFee
+        sellNowClosePrice = row['CLOSE_' + sellCode]
+        buyNowClosePrice = row['CLOSE_' + buyCode]
+        now_return = (buyNowClosePrice - buyOpenPrice) * buyMount + (sellOpenPrice - sellNowClosePrice) * sellMount
+        now_return = now_return - buyTradeFee - sellTradeFee - buyCreditFee - sellCreditFee
 
-    if open_days >= config.loss_limit_max_days:
-        trade_result = 'OVER MAX DAY'
-    elif now_return < 0 and now_return / totalMount <= config.stop_loss_limit:
-        trade_result = 'STOP LOSS OVER RATIO'
-    elif now_return > 0 and now_return / totalMount >= config.stop_profit_limit:
-        trade_result = 'STOP PROFIT OVER RATIO'
+        if open_days >= config.loss_limit_max_days:
+            trade_result = 'OVER MAX DAY'
+        elif now_return < 0 and now_return / totalMount <= config.stop_loss_limit:
+            trade_result = 'STOP LOSS OVER RATIO'
+        elif now_return > 0 and now_return / totalMount >= config.stop_profit_limit:
+            trade_result = 'STOP PROFIT OVER RATIO'
 
-    if (len(trade_result) == 0):
-        # check for trailing stop loss strategy
-        if (config.trailing_stop_loss_strategy is not None):
-            if (config.trailing_stop_loss_strategy == TRAILING_STOP_LOSS_STRATEGY_1):
-                if (yesterday_return > 0 and now_return > yesterday_return):
-                    trade_result = 'TRAILING_STOP_LOSS_STRATEGY_1'
-            elif (config.trailing_stop_loss_strategy == TRAILING_STOP_LOSS_STRATEGY_2):
-                pass
-    yesterday_return = now_return
+        if (len(trade_result) == 0):
+            # check for trailing stop loss strategy
+            if (config.trailing_stop_loss_strategy is not None):
+                if (config.trailing_stop_loss_strategy == TRAILING_STOP_LOSS_STRATEGY_1):
+                    if (yesterday_return > 0 and now_return > yesterday_return):
+                        trade_result = 'TRAILING_STOP_LOSS_STRATEGY_1'
+                elif (config.trailing_stop_loss_strategy == TRAILING_STOP_LOSS_STRATEGY_2):
+                    pass
+        yesterday_return = now_return
 
 def getTargetTradeData(year, month, sellCode, buyCode):
     csvFile = sellCode + "_" + buyCode + '.csv'
