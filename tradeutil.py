@@ -195,7 +195,15 @@ def check_cointegration(pairs, symbol1, symbol2):
     return coin_result1[1], coin_result2[1]
 
 def check_cointegration_common (pairs, symbol1, symbol2):
-    return ts.coint(pairs['CLOSE_'+symbol1], pairs['CLOSE_'+symbol2] )
+
+    try:
+        x = ts.coint(pairs['CLOSE_'+symbol1], pairs['CLOSE_'+symbol2] )
+        return x
+    except ValueError:
+        print('check_cointegration_common Error. values:')
+        print(pairs['CLOSE_'+symbol1])
+        print(pairs['CLOSE_' + symbol2])
+    return 1.0
 
 def date_span(start_date, end_date):
     for n in range((end_date - start_date).days + 1):
