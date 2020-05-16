@@ -10,7 +10,7 @@ sheet_name_history = 'Trade History'
 sheet_name_open_position = 'Open Position'
 
 def main(targetYear=None, targetMonth=None):
-    print('Aalysis main start!')
+    print('Position / History Aalysis main start!')
     file_name = os.path.join(setting.get_root_dir(), excel_file_name)
     workbook = openpyxl.load_workbook(file_name, data_only=True)
     sheet = workbook[sheet_name_history]
@@ -64,7 +64,7 @@ def main(targetYear=None, targetMonth=None):
 
         cacluate_needed_data(symb1, symb2, csv_file_full_path)
 
-    print('Aalysis main end!')
+    print('Position / History Aalysis main end!')
 
 def cacluate_needed_data(symb1, symb2, csv_file_full_path):
 

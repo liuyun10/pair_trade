@@ -10,7 +10,7 @@ from operator import itemgetter
 from time import strftime
 import Scrape_fiscal_data as get_fiscal
 import Scrape_gyakunipo as get_gyakunipo
-import analysis
+import analysis,dryrun_analysis
 
 pd.set_option('display.max_columns', None)
 corr_result_file_name='corr.csv'
@@ -488,6 +488,8 @@ if __name__ == '__main__':
 
     # caculate the data of open position and history trade
     analysis.main()
+    # caculate the data of open position and history trade for dry-run
+    dryrun_analysis.main()
 
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))

@@ -18,7 +18,7 @@ sheet_name_history = 'Trade History'
 
 # the threshold of corr
 CORR_THRE_SHOLD_THREE_MONTH=0.5
-CORR_THRE_SHOLD_ONE_YEAR=0.8
+CORR_THRE_SHOLD_ONE_YEAR=0.85
 
 # the threshold of coint
 # p-value
@@ -26,7 +26,7 @@ COINT_MAX_VAL_THREE_MONTH=0.5
 COINT_MAX_VAL_ONE_YEAR=0.1
 
 #For back test (max open oprice diff)
-MAX_OPEN_PRICE_DIFF=10
+MAX_OPEN_PRICE_DIFF=7
 
 def get_trade_excel_full_path():
     return  os.path.join(get_root_dir(), excel_file_name)
