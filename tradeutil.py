@@ -149,10 +149,17 @@ def addMasterInfo(corr_df, master_df):
 
         # print("symblA:{0} symblB:{1}".format(symblA,symblB))
 
-        stockA_name_list.append(master_df[master_df.index == symblA].at[symblA, 'NAME'])
-        stockB_name_list.append(master_df[master_df.index == symblB].at[symblB, 'NAME'])
-        stockA_industry_list.append(master_df[master_df.index == symblA].at[symblA, 'INDUSTRY'])
-        stockB_industry_list.append(master_df[master_df.index == symblB].at[symblB, 'INDUSTRY'])
+        try:
+            stockA_name_list.append(master_df[master_df.index == symblA].at[symblA, 'NAME'])
+            stockA_industry_list.append(master_df[master_df.index == symblA].at[symblA, 'INDUSTRY'])
+        except KeyError:
+            print('addMasterInfo KeyError symblA:' + str(symblA))
+
+        try:
+            stockB_name_list.append(master_df[master_df.index == symblB].at[symblB, 'NAME'])
+            stockB_industry_list.append(master_df[master_df.index == symblB].at[symblB, 'INDUSTRY'])
+        except KeyError:
+            print('addMasterInfo KeyError symblB:' + str(symblB))
 
     corr_df = corr_df.assign(SYM_A_NAME=stockA_name_list, SYM_B_NAME=stockB_name_list, SYM_A_INDUSTRY=stockA_industry_list, SYM_B_INDUSTRY=stockB_industry_list)
     corr_df = corr_df.loc[:,['SYM_A', 'SYM_A_NAME', 'SYM_A_INDUSTRY','SYM_B', 'SYM_B_NAME', 'SYM_B_INDUSTRY','CORR_3M','CORR_1Y','COINT_3M','COINT_1Y']]

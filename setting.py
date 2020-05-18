@@ -9,6 +9,7 @@ TRADE_FILE_DIR='trade'
 FILE_ENCODING='shift_jis'
 
 corr_result_file_name='corr.csv'
+watching_corr_result_file_name='watching_corr_result.csv'
 report_file_name='report'
 
 SAYA_MEAN_WINDOW=75
@@ -60,3 +61,6 @@ def get_currenty_report_file():
 
 def get_ignore_file_full_path():
     return  os.path.join(get_input_data_dir(), MASTER_FILE_DIR,'ignore_symbols.txt')
+
+def get_watching_list_file_dir():
+    return os.path.join(get_input_data_dir(), 'watching')

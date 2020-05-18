@@ -11,6 +11,7 @@ from time import strftime
 import Scrape_fiscal_data as get_fiscal
 import Scrape_gyakunipo as get_gyakunipo
 import analysis,dryrun_analysis
+import watching_list_data_calu
 
 pd.set_option('display.max_columns', None)
 corr_result_file_name='corr.csv'
@@ -46,11 +47,11 @@ def calculate_spread_zscore(pairs, symbol1, symbol2):
 
     return pairs
 
-def output_report(corr_df, isFastCaculateMode):
+def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name):
 
     print('Output Report Processing...')
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    report_file = os.path.join(setting.get_result_dir(), 'report_' + timestr + '.xlsx')
+    report_file = os.path.join(resultDir, 'report_' + timestr + '.xlsx')
 
     # corr_df = file_util.read_csv(os.path.join(setting.get_result_dir(), corr_result_file_name))
     master_df = file_util.read_csv(os.path.join(setting.get_master_file_dir()))
@@ -94,7 +95,7 @@ def output_report(corr_df, isFastCaculateMode):
         print('Processing {0}/{1} {2} - {3}...'.format(index1, len(corr_df), symblA, symblB))
 
         try:
-            _file = os.path.join(setting.get_result_dir(), symblA + '_' + symblB + '.csv')
+            _file = os.path.join(resultDir, symblA + '_' + symblB + '.csv')
             _df = file_util.read_csv(_file)
 
             OPEN_A_list.append(_df['OPEN_' + symblA][0])
@@ -123,7 +124,7 @@ def output_report(corr_df, isFastCaculateMode):
 
             # print(_df)
             total_profit, average_profit, average_pl, total_times, plus_times, minus_times, open_days, stop_profit_times, stop_loss_times, \
-            max_day_over_times = signal_generate(_df, symblA, symblB)
+            max_day_over_times = signal_generate(_df, symblA, symblB, resultDir)
 
             total_profit_list.append(total_profit)
             average_profit_list.append(average_profit)
@@ -198,9 +199,9 @@ def output_report(corr_df, isFastCaculateMode):
                    'pl_times', 'open_days',
                    'stop_profit_times', 'stop_loss_times', 'max_day_over_times']]
 
-    file_util.write_csv(corr_df_new, os.path.join(setting.get_result_dir(), 'corr_result.csv'))
+    file_util.write_csv(corr_df_new, os.path.join(resultDir, corr_result_file_name))
     if (isFastCaculateMode == False):
-        file_util.write_csv(corr_df_new, os.path.join(setting.get_master_dir(), 'corr_result.csv'))
+        file_util.write_csv(corr_df_new, os.path.join(setting.get_master_dir(), corr_result_file_name))
 
     # with pd.ExcelWriter(report_file) as writer:
     #corr_df_new.to_excel(writer, sheet_name='CORR')
@@ -210,7 +211,7 @@ def output_report(corr_df, isFastCaculateMode):
 
     print('Output Report Process end!')
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, save_portfolio_file_path=setting.get_result_dir(), z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15,
+def signal_generate(pairs, symbol_Axis, symbol_Pair, save_portfolio_file_path, z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15,
                     stop_loss_rate=-0.025, stop_profit_rate=0.025):
 
     isUseExitThreshold = False
@@ -484,12 +485,14 @@ if __name__ == '__main__':
                              data=corr_data)
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
-    output_report(corr_data, isFastCaculateMode)
+    output_report(corr_data, isFastCaculateMode, setting.get_result_dir(), 'corr_result.csv')
 
     # caculate the data of open position and history trade
     analysis.main()
     # caculate the data of open position and history trade for dry-run
     dryrun_analysis.main()
+    # watching list get
+    watching_list_data_calu.main()
 
     process_time = datetime.now() - start_time
     print('main end!'+ strftime("%Y-%m-%d %H:%M:%S"))
