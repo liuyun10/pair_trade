@@ -85,6 +85,22 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
     stop_loss_times_list = []
     max_day_over_times_list = []
 
+    DATE_3M_ago_list = []
+    CLOSE_A_3M_ago_list= []
+    CLOSE_B_3M_ago_list = []
+
+    DATE_6M_ago_list = []
+    CLOSE_A_6M_ago_list = []
+    CLOSE_B_6M_ago_list = []
+
+    DATE_1y_ago_list = []
+    CLOSE_A_1y_ago_list = []
+    CLOSE_B_1y_ago_list = []
+
+    DATE_2y_ago_list = []
+    CLOSE_A_2y_ago_list = []
+    CLOSE_B_2y_ago_list = []
+
     index1 = 0
     for index, row in corr_df.iterrows():
         # print('row.SYM_A:'+str(int(row.SYM_A)))
@@ -142,6 +158,25 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
             stop_loss_times_list.append(stop_loss_times)
             max_day_over_times_list.append(max_day_over_times)
 
+            date_3m_ago, CLOSE_A_3M_ago, CLOSE_B_3M_ago, date_6m_ago, CLOSE_A_6M_ago, CLOSE_B_6M_ago, date_1y_ago, \
+            CLOSE_A_1Y_ago, CLOSE_B_1Y_ago, date_2y_ago, CLOSE_A_2Y_ago, CLOSE_B_2Y_ago = trade_util.get_before_close_price_data(_df, symblA, symblB)
+
+            DATE_3M_ago_list.append(date_3m_ago)
+            CLOSE_A_3M_ago_list.append(CLOSE_A_3M_ago)
+            CLOSE_B_3M_ago_list.append(CLOSE_B_3M_ago)
+
+            DATE_6M_ago_list.append(date_6m_ago)
+            CLOSE_A_6M_ago_list.append(CLOSE_A_6M_ago)
+            CLOSE_B_6M_ago_list.append(CLOSE_B_6M_ago)
+
+            DATE_1y_ago_list.append(date_1y_ago)
+            CLOSE_A_1y_ago_list.append(CLOSE_A_1Y_ago)
+            CLOSE_B_1y_ago_list.append(CLOSE_B_1Y_ago)
+
+            DATE_2y_ago_list.append(date_2y_ago)
+            CLOSE_A_2y_ago_list.append(CLOSE_A_2Y_ago)
+            CLOSE_B_2y_ago_list.append(CLOSE_B_2Y_ago)
+
             # path, ext = os.path.splitext(os.path.basename(_file))
             # _df.to_excel(writer, sheet_name=path)
 
@@ -173,6 +208,23 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
             stop_profit_times_list.append(0)
             stop_loss_times_list.append(0)
             max_day_over_times_list.append(0)
+
+            DATE_3M_ago_list.append(0)
+            CLOSE_A_3M_ago_list.append(0)
+            CLOSE_B_3M_ago_list.append(0)
+
+            DATE_6M_ago_list.append(0)
+            CLOSE_A_6M_ago_list.append(0)
+            CLOSE_B_6M_ago_list.append(0)
+
+            DATE_1y_ago_list.append(0)
+            CLOSE_A_1y_ago_list.append(0)
+            CLOSE_B_1y_ago_list.append(0)
+
+            DATE_2y_ago_list.append(0)
+            CLOSE_A_2y_ago_list.append(0)
+            CLOSE_B_2y_ago_list.append(0)
+
             continue
 
     corr_df_new = corr_df_new.assign(OPEN_A=OPEN_A_list, CLOSE_A=CLOSE_A_list, OPEN_B=OPEN_B_list,
@@ -186,7 +238,13 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
                                      minus_times=minus_times_list,
                                      pl_times=pl_times_list, open_days=open_days_list,
                                      stop_profit_times=stop_profit_times_list,
-                                     stop_loss_times=stop_loss_times_list, max_day_over_times=max_day_over_times_list)
+                                     stop_loss_times=stop_loss_times_list, max_day_over_times=max_day_over_times_list,
+                                     DATE_3M_ago= DATE_3M_ago_list, CLOSE_A_3M_ago=CLOSE_A_3M_ago_list, CLOSE_B_3M_ago=CLOSE_B_3M_ago_list,
+                                     DATE_6M_ago=DATE_6M_ago_list, CLOSE_A_6M_ago=CLOSE_A_6M_ago_list, CLOSE_B_6M_ago=CLOSE_B_6M_ago_list,
+                                     DATE_1y_ago=DATE_1y_ago_list, CLOSE_A_1y_ago=CLOSE_A_1y_ago_list, CLOSE_B_1y_ago=CLOSE_B_1y_ago_list,
+                                     DATE_2y_ago=DATE_2y_ago_list, CLOSE_A_2y_ago=CLOSE_A_2y_ago_list, CLOSE_B_2y_ago=CLOSE_B_2y_ago_list
+                                     )
+
     # print(corr_df_new)
     # corr_df_new['ABS_SIGMA'] = np.abs(corr_df_new['SIGMA'])
     corr_df_new = corr_df_new.sort_values('total_profit', ascending=False)
@@ -197,7 +255,11 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
                    'CORR_3M', 'CORR_1Y', 'COINT_3M', 'COINT_1Y', 'SIGMA', 'ABS_SIGMA', 'LAST_DAY_SIGMA','DEV_RATE', 'LOT_SIZE_DIFF',
                    'total_profit', 'average_profit', 'average_pl', 'total_times', 'plus_times', 'minus_times',
                    'pl_times', 'open_days',
-                   'stop_profit_times', 'stop_loss_times', 'max_day_over_times']]
+                   'stop_profit_times', 'stop_loss_times', 'max_day_over_times',
+                   'DATE_3M_ago', 'CLOSE_A_3M_ago', 'CLOSE_B_3M_ago',
+                   'DATE_6M_ago', 'CLOSE_A_6M_ago', 'CLOSE_B_6M_ago',
+                   'DATE_1y_ago', 'CLOSE_A_1y_ago', 'CLOSE_B_1y_ago',
+                   'DATE_2y_ago', 'CLOSE_A_2y_ago', 'CLOSE_B_2y_ago',]]
 
     file_util.write_csv(corr_df_new, os.path.join(resultDir, corr_result_file_name))
     if (isFastCaculateMode == False):

@@ -1,10 +1,11 @@
 import numpy as np
-import math
+import math, os.path
 import matplotlib.pyplot as plt
 from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import statsmodels.tsa.stattools as ts
+import setting, fileutil as file_util
 
 def get_lot_size(axisPrice, pairPrice):
 
@@ -216,6 +217,60 @@ def date_span(start_date, end_date):
     for n in range((end_date - start_date).days + 1):
         yield start_date + timedelta(n)
 
+def get_before_close_price_data(pairs, symblA, symblB):
+
+    pairs = pairs.sort_values('DATE', ascending=False)
+    pairs['DATE'] = pd.to_datetime(pairs['DATE'])
+    pairs.index = pairs['DATE']
+
+    three_month_ago = datetime.today() - relativedelta(months=3)
+    three_month_data = pairs[pairs.index > three_month_ago]
+    date_3m_ago = three_month_ago.strftime('%Y/%m/%d')
+    if not three_month_data.empty:
+        CLOSE_A_3M_ago = three_month_data.loc[three_month_data.index[-1], 'CLOSE_'+symblA]
+        CLOSE_B_3M_ago = three_month_data.loc[three_month_data.index[-1], 'CLOSE_' + symblB]
+    else:
+        CLOSE_A_3M_ago = 0
+        CLOSE_B_3M_ago = 0
+
+    six_month_ago = datetime.today() - relativedelta(months=6)
+    six_month_data = pairs[pairs.index > six_month_ago]
+    date_6m_ago = six_month_ago.strftime('%Y/%m/%d')
+    if not six_month_data.empty:
+        CLOSE_A_6M_ago =six_month_data.loc[six_month_data.index[-1], 'CLOSE_'+symblA]
+        CLOSE_B_6M_ago = six_month_data.loc[six_month_data.index[-1], 'CLOSE_' + symblB]
+    else:
+        CLOSE_A_6M_ago  = 0
+        CLOSE_B_6M_ago = 0
+
+    one_year_ago = datetime.today() - relativedelta(years=1)
+    one_year_data = pairs[pairs.index > one_year_ago]
+    date_1y_ago = one_year_ago.strftime('%Y/%m/%d')
+    if not one_year_data.empty:
+        CLOSE_A_1Y_ago =one_year_data.loc[one_year_data.index[-1], 'CLOSE_'+symblA]
+        CLOSE_B_1Y_ago = one_year_data.loc[one_year_data.index[-1], 'CLOSE_' + symblB]
+    else:
+        CLOSE_A_1Y_ago  = 0
+        CLOSE_B_1Y_ago = 0
+
+    two_year_ago = datetime.today() - relativedelta(years=2)
+    two_year_data = pairs[pairs.index > two_year_ago]
+    date_2y_ago = two_year_ago.strftime('%Y/%m/%d')
+    if not two_year_data.empty:
+        CLOSE_A_2Y_ago =two_year_data.loc[two_year_data.index[-1], 'CLOSE_'+symblA]
+        CLOSE_B_2Y_ago = two_year_data.loc[two_year_data.index[-1], 'CLOSE_' + symblB]
+    else:
+        CLOSE_A_2Y_ago = 0
+        CLOSE_B_2Y_ago = 0
+
+    return date_3m_ago, CLOSE_A_3M_ago, CLOSE_B_3M_ago, date_6m_ago, CLOSE_A_6M_ago, CLOSE_B_6M_ago, date_1y_ago,\
+           CLOSE_A_1Y_ago, CLOSE_B_1Y_ago, date_2y_ago, CLOSE_A_2Y_ago, CLOSE_B_2Y_ago
+
 if __name__ == '__main__':
-    result=get_lot_size(1401,2000)
-    print(result)
+    #result=get_lot_size(1401,2000)
+    #print(result)
+    symblA = '9513'
+    symblB = '9810'
+    _file = os.path.join(setting.get_result_dir(), symblA + '_' + symblB + '.csv')
+    _df = file_util.read_csv(_file)
+    print(get_before_close_price_data(_df, symblA, symblB))
