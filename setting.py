@@ -73,3 +73,9 @@ def get_org_all_stock_data_file_dir():
 
 def get_generated_input_target_stock_data_dir():
     return os.path.join(get_input_data_dir(), 'stock_data', 'input_data')
+
+def get_target_stock_data_list_file_path():
+    return os.path.join(get_input_data_dir(), 'stock_data', 'target_stock_list.csv')
+
+def get_target_download_csv_file_path(target_date):
+    return os.path.join(get_download_stock_file_dir(), target_date + '.csv')

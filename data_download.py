@@ -2,7 +2,7 @@ import os, setting, lhafile
 import urllib.request
 from datetime import datetime
 from time import strftime
-
+import fileutil as file_util
 #url = 'http://www.edatalab.sakura.ne.jp/data2020/D200527.LZH'
 
 def open_lha(target_file_path, target_date):
@@ -15,8 +15,7 @@ def open_lha(target_file_path, target_date):
         # print(info.filename)
         file_name = info.filename
 
-    save_file = os.path.join(setting.get_download_stock_file_dir(), target_date + '.csv')
-    open(save_file, "wb").write(f.read(file_name))
+    open(setting.get_target_download_csv_file_path(target_date), "wb").write(f.read(file_name))
     f = None
     try:
         os.remove(target_file_path)
@@ -42,17 +41,17 @@ def download_target_file(target_date):
 
 if __name__ == '__main__':
 
-    start_time = datetime.now()
-
     today = datetime.now()
+    print('Download Stock Data Start ' + today.strftime("%Y-%m-%d %H:%M:%S"))
 
     weekno = today.today().weekday()
+    # print('weekno:'+ str(weekno))
     if weekno < 5:
-        print
-        "Weekday"
-    else:
-        print
-        "Weekend"
+        download_target_file(today.strftime("%Y%m%d"))
+        # download_target_file('20200601')
+        # open_lha(save_file)
 
-    print('Download Stock Data Start ' + today.strftime("%Y-%m-%d %H:%M:%S"))
-   
+    else:
+        print('Skip download date due to today is not weekday. weekno=' + str(weekno))
+
+    print('Download Stock Data End ' + strftime("%Y-%m-%d %H:%M:%S"))
