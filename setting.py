@@ -64,3 +64,12 @@ def get_ignore_file_full_path():
 
 def get_watching_list_file_dir():
     return os.path.join(get_input_data_dir(), 'watching')
+
+def get_download_stock_file_dir():
+    return os.path.join(get_input_data_dir(), 'stock_data', 'download_files')
+
+def get_org_all_stock_data_file_dir():
+    return os.path.join(get_input_data_dir(), 'stock_data', 'org_all_stock_data')
+
+def get_generated_input_target_stock_data_dir():
+    return os.path.join(get_input_data_dir(), 'stock_data', 'input_data')

@@ -273,8 +273,8 @@ def output_report(corr_df, isFastCaculateMode, resultDir, corr_result_file_name)
 
     print('Output Report Process end!')
 
-def signal_generate(pairs, symbol_Axis, symbol_Pair, save_portfolio_file_path, z_entry_threshold=2, z_exit_threshold=0, entry_max_days=15,
-                    stop_loss_rate=-0.025, stop_profit_rate=0.025):
+def signal_generate(pairs, symbol_Axis, symbol_Pair, save_portfolio_file_path, z_entry_threshold=2, z_exit_threshold=0, entry_max_days=20,
+                    stop_loss_rate=-0.05, stop_profit_rate=0.05):
 
     isUseExitThreshold = False
     pairs = pairs.sort_values('DATE', ascending=True)
