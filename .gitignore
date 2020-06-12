@@ -5,3 +5,7 @@
 /__pycache__/
 /.git/
 /stock_data/back_test/
+/scrape_data/__pycache__/
+/download_data/__pycache__/
+/util/__pycache__/
+/analysis/__pycache__/

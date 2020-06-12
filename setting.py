@@ -79,3 +79,6 @@ def get_target_stock_data_list_file_path():
 
 def get_target_download_csv_file_path(target_date):
     return os.path.join(get_download_stock_file_dir(), target_date + '.csv')
+
+def get_generated_stock_data_date_track_file():
+    return os.path.join(get_input_data_dir(), 'stock_data', 'stock_data_last_update_date.txt')
