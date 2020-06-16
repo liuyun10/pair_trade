@@ -4,13 +4,20 @@ from scrape_data import Scrape_fiscal_data as get_fiscal, Scrape_gyakunipo as ge
 from analysis import position_history_analysis, dryrun_analysis, watching_list_data_analysis
 from datetime import datetime
 import sys
-import pair_trade
+import pair_trade,setting
 from time import strftime
+import logging
+from util.log_helper import LogHelper
 
 def main(argv):
 
+    # Setup logger
+    LogHelper.setup(log_path='{}/sayatori_trade.log'.format(setting.output_log_file_path), log_level=logging.INFO)
+    _logger = logging.getLogger(__name__)
+
     start_time = datetime.now()
     print('Sayatori main start ' + strftime("%Y-%m-%d %H:%M:%S"))
+    _logger.info('Sayatori main start ' + strftime("%Y-%m-%d %H:%M:%S"))
 
     # download stock price data and generate target input data
     download_data_main.main()
@@ -32,6 +39,8 @@ def main(argv):
     process_time = datetime.now() - start_time
     print('Sayatori main end!' + strftime("%Y-%m-%d %H:%M:%S"))
     print('Sayatori main time cost:{0}'.format(process_time))
+    _logger.info('Sayatori main end!' + strftime("%Y-%m-%d %H:%M:%S"))
+    _logger.info('Sayatori main time cost:{0}'.format(process_time))
 
 if __name__ == '__main__':
     main(sys.argv)

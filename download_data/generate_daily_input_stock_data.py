@@ -22,6 +22,8 @@ def generate_input_stock_data(target_date):
         # print(download_stock_data)
         # print(download_stock_data.dtypes)
 
+        file_util.clean_target_dir(setting.get_generated_input_target_stock_data_dir())
+
         for index, data_row in target_stock_data_list.iterrows():
             symb = str(data_row['CODE'])
             # print('symb:'+ symb)
@@ -44,13 +46,24 @@ def generate_input_stock_data(target_date):
             insert_value = [[insert_date, searched_data.iloc[0]['OPEN'], searched_data.iloc[0]['HIGH'], searched_data.iloc[0]['LOW'], searched_data.iloc[0]['CLOSE'], searched_data.iloc[0]['Volume']]]
             _tmp_df = pd.DataFrame(data=insert_value, columns=['DATE', 'OPEN', 'HIGH','LOW', 'CLOSE','Volume'])
             symb_df = pd.concat([_tmp_df, symb_df], sort=True)
-
             symb_df = symb_df.loc[:, ['DATE', 'OPEN', 'HIGH', 'LOW', 'CLOSE', 'Volume']]
-
-            target_data_span = target_date_time - relativedelta(years=INPUT_TARGET_DATA_YEAR_SPAN)
 
             symb_df['DATE'] = pd.to_datetime(symb_df['DATE'])
             symb_df.index = symb_df['DATE']
+            symb_df = symb_df.drop_duplicates(keep='first')
+
+            symb_df['OPEN'] = symb_df['OPEN'].astype(str).replace('\.0', '', regex=True)
+            symb_df['HIGH'] = symb_df['HIGH'].astype(str).replace('\.0', '', regex=True)
+            symb_df['LOW'] = symb_df['LOW'].astype(str).replace('\.0', '', regex=True)
+            symb_df['CLOSE'] = symb_df['CLOSE'].astype(str).replace('\.0', '', regex=True)
+            symb_df['Volume'] = symb_df['Volume'].astype(str).replace('\.0', '', regex=True)
+
+            file_util.write_csv_without_index(symb_df, data_csv_file)
+
+            target_data_span = target_date_time - relativedelta(years=INPUT_TARGET_DATA_YEAR_SPAN)
+            target_data_span = target_data_span - relativedelta(days=1)
+            # symb_df['DATE'] = pd.to_datetime(symb_df['DATE'])
+            # symb_df.index = symb_df['DATE']
             target_data = symb_df[symb_df.index > target_data_span]
 
             # print(symb_df.info)
@@ -70,5 +83,5 @@ def main(target_date):
 
 if __name__ == '__main__':
     target_date = datetime.now().strftime("%Y%m%d")
-    # target_date = '20200603'
+    target_date = '20200612'
     main(target_date)

@@ -7,7 +7,7 @@ from time import strftime
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
-input_test_data_dir = os.path.join(setting.get_input_data_dir(), 'back_test')
+input_test_data_dir = os.path.join(setting.get_root_data_dir(), 'back_test')
 
 caculated_csv_dir = os.path.join(input_test_data_dir, 'pre_caculate')
 portfolio_csv_dir = os.path.join(input_test_data_dir, 'portfolio')

@@ -16,7 +16,7 @@ def main(targetYear=None, targetMonth=None):
     sheet = workbook[sheet_name_history]
     record_list = []
 
-    ft.clean_target_dir(os.path.join(setting.get_input_data_dir(), 'trade', 'dry-run', 'open'))
+    ft.clean_target_dir(setting.get_dryrun_trade_open_dir())
     for i in range(4, sheet.max_row + 1, 2):
         record = TradeRecord()
         year = sheet.cell(row=i, column=27).value
@@ -55,12 +55,12 @@ def main(targetYear=None, targetMonth=None):
                 continue
 
         if (record.kbn == 'open'):
-            ft.create_target_dir(os.path.join(setting.get_input_data_dir(), 'trade','dry-run', record.kbn))
-            csv_file_full_path = os.path.join(setting.get_input_data_dir(), 'trade','dry-run', record.kbn, file_name)
+            ft.create_target_dir(os.path.join(setting.get_dryrun_trade_dir(), record.kbn))
+            csv_file_full_path = os.path.join(setting.get_dryrun_trade_dir(), record.kbn, file_name)
         else:
-            ft.create_target_dir(os.path.join(setting.get_input_data_dir(), 'trade','dry-run', 'history', record.year))
-            ft.create_target_dir(os.path.join(setting.get_input_data_dir(), 'trade','dry-run', 'history', record.year, record.month))
-            csv_file_full_path = os.path.join(setting.get_input_data_dir(), 'trade','dry-run', 'history', record.year, record.month, file_name)
+            ft.create_target_dir(os.path.join(setting.get_dryrun_trade_history_dir(), record.year))
+            ft.create_target_dir(os.path.join(setting.get_dryrun_trade_history_dir(), record.year, record.month))
+            csv_file_full_path = os.path.join(setting.get_dryrun_trade_history_dir(), record.year, record.month, file_name)
 
         cacluate_needed_data(symb1, symb2, csv_file_full_path)
 

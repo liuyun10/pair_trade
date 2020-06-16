@@ -11,7 +11,7 @@ from time import strftime
 # import stock_data_main
 
 pd.set_option('display.max_columns', None)
-corr_result_file_name='corr.csv'
+# corr_result_file_name='corr.csv'
 
 def create_pairs_dataframe(data_dir, symbol1, symbol2):
     # print("Importing CSV data...")
@@ -540,7 +540,7 @@ def main(args):
                              data=corr_data)
     # file_util.write_csv(corr_data, os.path.join(setting.get_result_dir(), corr_result_file_name))
 
-    output_report(corr_data, isFastCaculateMode, setting.get_result_dir(), 'corr_result.csv')
+    output_report(corr_data, isFastCaculateMode, setting.get_result_dir(), setting.corr_result_file_name)
 
     process_time = datetime.now() - start_time
     print('main end!' + strftime("%Y-%m-%d %H:%M:%S"))
