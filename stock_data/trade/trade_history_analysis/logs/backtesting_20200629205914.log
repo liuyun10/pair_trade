@@ -1,0 +1,23 @@
+2020-06-29 20:59:14,133 INFO - util.log_helper - Finished configuring logger
+2020-06-29 20:59:14,134 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ymd': None, 'backtest_end_ymd': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.05, 'stop_loss_limit': -0.05, 'loss_limit_max_days': 20, 'clear_all_analysis_data': False}
+2020-06-29 20:59:22,878 DEBUG - PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2020-06-29 20:59:22,878 DEBUG - PIL.PngImagePlugin - STREAM b'sRGB' 41 1
+2020-06-29 20:59:22,879 DEBUG - PIL.PngImagePlugin - STREAM b'pHYs' 54 9
+2020-06-29 20:59:22,879 DEBUG - PIL.PngImagePlugin - STREAM b'IDAT' 75 65461
+2020-06-29 20:59:22,888 CRITICAL - util.log_helper - Unhandled exception
+Traceback (most recent call last):
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 335, in <module>
+    main()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 69, in main
+    history_data_file_full_path = output_current_trade_history_data()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 259, in output_current_trade_history_data
+    ft.write_csv_without_index(pd_data, history_output_csv_file_full_path)
+  File "G:\Stock\pairs_trade\pair_trade\util\fileutil.py", line 30, in write_csv_without_index
+    data.to_csv(file_full_path, encoding=FILE_ENCODING, header=True, index=False)
+  File "C:\Users\Administrator\PycharmProjects\manager\venv\lib\site-packages\pandas\core\generic.py", line 3020, in to_csv
+    formatter.save()
+  File "C:\Users\Administrator\PycharmProjects\manager\venv\lib\site-packages\pandas\io\formats\csvs.py", line 157, in save
+    compression=self.compression)
+  File "C:\Users\Administrator\PycharmProjects\manager\venv\lib\site-packages\pandas\io\common.py", line 424, in _get_handle
+    f = open(path_or_buf, mode, encoding=encoding, newline="")
+PermissionError: [Errno 13] Permission denied: 'G:\\Stock\\pairs_trade\\pair_trade\\stock_data\\trade\\trade_history_analysis\\history\\trade_history.csv'

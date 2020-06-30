@@ -1,0 +1,32 @@
+https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/#install-mongodb-community-edition
+
+1.Download MongoDB insaller from below 
+https://www.mongodb.com/try/download/community?tck=docs_server
+
+2.Install MongoDB
+Select 'Custom'  then change location to d:\Program Files\MongoDB\Server\4.2\
+Uncheck 'Install' MongoDB compass(a visual tool)
+
+3.From the Services console, locate the MongoDB service.
+Select 'Local System Account' in Logon Tab, Click Start
+
+4.Open a Command Interpreter with Administrative privileges and run:
+"D:\Program Files\MongoDB\Server\4.2\bin\mongo.exe"
+(Add MongoDB binaries to the System PATH  D:\Program Files\MongoDB\Server\4.2\bin)
+
+
+5.Run below command 
+> show dbs
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+
+
+Useful command
+
+Delele all data in one collection
+> db.daily.remove({})
+WriteResult({ "nRemoved" : 1112 })
+
+
+db.daily.find().count()

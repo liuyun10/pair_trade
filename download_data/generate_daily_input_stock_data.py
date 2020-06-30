@@ -26,7 +26,7 @@ def generate_input_stock_data(target_date):
 
         for index, data_row in target_stock_data_list.iterrows():
             symb = str(data_row['CODE'])
-            # print('symb:'+ symb)
+            print('symb:'+ symb)
 
             data_csv_file = os.path.join(setting.get_org_all_stock_data_file_dir(), symb + '.csv')
             symb_df = file_util.read_csv(data_csv_file)
@@ -36,12 +36,14 @@ def generate_input_stock_data(target_date):
 
             searched_data = download_stock_data[download_stock_data['CODE'] == data_row['CODE']]
 
+            if searched_data.empty:
+                continue
             # print(searched_data['HIGH'])
             # print(searched_data.iloc[0]['HIGH'])
 
             target_date_time = datetime.strptime(target_date, '%Y%m%d')
             insert_date = target_date_time.strftime("%Y-%m-%d")
-            # print(insert_date)
+            # print(searched_data)
 
             insert_value = [[insert_date, searched_data.iloc[0]['OPEN'], searched_data.iloc[0]['HIGH'], searched_data.iloc[0]['LOW'], searched_data.iloc[0]['CLOSE'], searched_data.iloc[0]['Volume']]]
             _tmp_df = pd.DataFrame(data=insert_value, columns=['DATE', 'OPEN', 'HIGH','LOW', 'CLOSE','Volume'])
@@ -83,5 +85,5 @@ def main(target_date):
 
 if __name__ == '__main__':
     target_date = datetime.now().strftime("%Y%m%d")
-    target_date = '20200612'
+    # target_date = '20200612'
     main(target_date)

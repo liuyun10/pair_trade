@@ -1,0 +1,54 @@
+2020-06-30 08:09:34,930 INFO - util.log_helper - Finished configuring logger
+2020-06-30 08:09:34,931 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ymd': None, 'backtest_end_ymd': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.05, 'stop_loss_limit': -0.05, 'loss_limit_max_days': 20, 'clear_all_analysis_data': False}
+2020-06-30 08:09:43,686 DEBUG - PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2020-06-30 08:09:43,686 DEBUG - PIL.PngImagePlugin - STREAM b'sRGB' 41 1
+2020-06-30 08:09:43,687 DEBUG - PIL.PngImagePlugin - STREAM b'pHYs' 54 9
+2020-06-30 08:09:43,687 DEBUG - PIL.PngImagePlugin - STREAM b'IDAT' 75 65461
+2020-06-30 08:09:43,709 DEBUG - __main__ - Processing 1/45 6472 - 6752...2019/10
+2020-06-30 08:09:43,730 DEBUG - __main__ - Processing 2/45 6305 - 3861...2019/10
+2020-06-30 08:09:43,753 DEBUG - __main__ - Processing 3/45 3099 - 7211...2019/10
+2020-06-30 08:09:43,776 DEBUG - __main__ - Processing 4/45 7453 - 8308...2019/10
+2020-06-30 08:09:43,796 DEBUG - __main__ - Processing 5/45 8750 - 8002...2019/10
+2020-06-30 08:09:43,818 DEBUG - __main__ - Processing 6/45 6770 - 8601...2019/10
+2020-06-30 08:09:43,840 DEBUG - __main__ - Processing 7/45 5803 - 7259...2019/10
+2020-06-30 08:09:43,863 DEBUG - __main__ - Processing 8/45 7186 - 8309...2019/10
+2020-06-30 08:09:43,884 DEBUG - __main__ - Processing 9/45 1820 - 4508...2019/11
+2020-06-30 08:09:43,905 DEBUG - __main__ - Processing 10/45 8002 - 8601...2019/11
+2020-06-30 08:09:43,929 DEBUG - __main__ - Processing 11/45 3105 - 6301...2019/11
+2020-06-30 08:09:43,952 DEBUG - __main__ - Processing 12/45 6770 - 1911...2019/12
+2020-06-30 08:09:43,975 DEBUG - __main__ - Processing 13/45 4182 - 1824...2019/12
+2020-06-30 08:09:43,998 DEBUG - __main__ - Processing 14/45 6995 - 6472...2019/12
+2020-06-30 08:09:44,023 DEBUG - __main__ - Processing 15/45 8601 - 8308...2019/12
+2020-06-30 08:09:44,046 DEBUG - __main__ - Processing 16/45 3861 - 5703...2019/12
+2020-06-30 08:09:44,069 DEBUG - __main__ - Processing 17/45 5991 - 7267...2019/12
+2020-06-30 08:09:44,091 DEBUG - __main__ - Processing 18/45 6471 - 6473...2019/12
+2020-06-30 08:09:44,114 DEBUG - __main__ - Processing 19/45 1860 - 5110...2019/12
+2020-06-30 08:09:44,137 DEBUG - __main__ - Processing 20/45 8572 - 8804...2020/2
+2020-06-30 08:09:44,160 DEBUG - __main__ - Processing 21/45 5333 - 9810...2020/2
+2020-06-30 08:09:44,185 DEBUG - __main__ - Processing 22/45 3105 - 3116...2020/2
+2020-06-30 08:09:44,209 DEBUG - __main__ - Processing 23/45 9501 - 8273...2020/2
+2020-06-30 08:09:44,231 DEBUG - __main__ - Processing 24/45 9201 - 8242...2020/2
+2020-06-30 08:09:44,253 DEBUG - __main__ - Processing 25/45 7240 - 6472...2020/2
+2020-06-30 08:09:44,276 DEBUG - __main__ - Processing 26/45 8306 - 6995...2020/2
+2020-06-30 08:09:44,298 DEBUG - __main__ - Processing 27/45 4183 - 4208...2020/2
+2020-06-30 08:09:44,320 DEBUG - __main__ - Processing 28/45 6457 - 6925...2020/3
+2020-06-30 08:09:44,344 DEBUG - __main__ - Processing 29/45 8316 - 8385...2020/3
+2020-06-30 08:09:44,367 DEBUG - __main__ - Processing 30/45 3101 - 7282...2020/5
+2020-06-30 08:09:44,390 DEBUG - __main__ - Processing 31/45 7278 - 8002...2020/6
+2020-06-30 08:09:44,413 DEBUG - __main__ - Processing 32/45 1941 - 7984...2020/6
+2020-06-30 08:09:44,436 DEBUG - __main__ - Processing 33/45 5333 - 1719...2020/6
+2020-06-30 08:09:44,458 DEBUG - __main__ - Processing 34/45 2281 - 2602...2020/6
+2020-06-30 08:09:44,481 DEBUG - __main__ - Processing 35/45 2531 - 5020...2020/6
+2020-06-30 08:09:44,501 DEBUG - __main__ - Processing 36/45 3405 - 9513...2020/6
+2020-06-30 08:09:44,525 DEBUG - __main__ - Processing 37/45 4471 - 6326...2020/6
+2020-06-30 08:09:44,547 DEBUG - __main__ - Processing 38/45 4205 - 1662...2020/6
+2020-06-30 08:09:44,571 DEBUG - __main__ - Processing 39/45 3101 - 6856...2020/6
+2020-06-30 08:09:44,594 DEBUG - __main__ - Processing 40/45 2531 - 5020...2020/6
+2020-06-30 08:09:44,607 INFO - __main__ - There is not have more stock date for backtest. 2531 - 5020...2020-06-15 00:00:00
+2020-06-30 08:09:44,617 DEBUG - __main__ - Processing 41/45 4324 - 6473...2020/6
+2020-06-30 08:09:44,640 DEBUG - __main__ - Processing 42/45 2501 - 1925...2020/6
+2020-06-30 08:09:44,663 DEBUG - __main__ - Processing 43/45 3407 - 7762...2020/6
+2020-06-30 08:09:44,676 INFO - __main__ - There is not have more stock date for backtest. 3407 - 7762...2020-06-09 00:00:00
+2020-06-30 08:09:44,685 DEBUG - __main__ - Processing 44/45 6925 - 6501...2020/6
+2020-06-30 08:09:44,708 DEBUG - __main__ - Processing 45/45 4204 - 4917...2020/6
+2020-06-30 08:09:44,721 INFO - __main__ - There is not have more stock date for backtest. 4204 - 4917...2020-06-10 00:00:00

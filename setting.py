@@ -79,7 +79,10 @@ def get_dryrun_trade_history_dir():
 
 # stock data download, generate input data
 def get_download_stock_file_dir():
-    return os.path.join(get_stock_data_dir(), 'download_files')
+    return os.path.join(get_stock_data_dir(), 'download_'
+                                              ''
+                                              ''
+                                              'files')
 def get_org_all_stock_data_file_dir():
     return os.path.join(get_stock_data_dir(),  'org_data')
 def get_generated_input_target_stock_data_dir():

@@ -1,0 +1,20 @@
+2020-06-30 08:03:47,852 INFO - util.log_helper - Finished configuring logger
+2020-06-30 08:03:47,853 INFO - __main__ - Backtest parameters: {'trade_data_path': './stock_data/trade/', 'log_output_dir': './stock_data/trade/trade_history_analysis/logs', 'backtest_start_ymd': None, 'backtest_end_ymd': None, 'trailing_stop_loss_strategy': None, 'exit_threshold_when plus_sigma': None, 'exit_threshold_when minux_sigma': None, 'stop_profit_limit': 0.05, 'stop_loss_limit': -0.05, 'loss_limit_max_days': 20, 'clear_all_analysis_data': False}
+2020-06-30 08:03:56,688 DEBUG - PIL.PngImagePlugin - STREAM b'IHDR' 16 13
+2020-06-30 08:03:56,689 DEBUG - PIL.PngImagePlugin - STREAM b'sRGB' 41 1
+2020-06-30 08:03:56,689 DEBUG - PIL.PngImagePlugin - STREAM b'pHYs' 54 9
+2020-06-30 08:03:56,689 DEBUG - PIL.PngImagePlugin - STREAM b'IDAT' 75 65461
+2020-06-30 08:03:56,712 DEBUG - __main__ - Processing 1/45 6472 - 6752...2019/10
+2020-06-30 08:03:56,758 CRITICAL - util.log_helper - Unhandled exception
+Traceback (most recent call last):
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 342, in <module>
+    main()
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 70, in main
+    generate_trade_report(history_data_file_full_path)
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 102, in generate_trade_report
+    result_row = generate_result(search_data, sellCode, buytCode, row)
+  File "G:/Stock/pairs_trade/pair_trade/trade_history_back_test.py", line 184, in generate_result
+    elif not search_data.empty and row == len(search_data):
+  File "C:\Users\Administrator\PycharmProjects\manager\venv\lib\site-packages\pandas\core\generic.py", line 1478, in __nonzero__
+    .format(self.__class__.__name__))
+ValueError: The truth value of a Series is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().

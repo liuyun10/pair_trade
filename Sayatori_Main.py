@@ -1,6 +1,6 @@
 # Copyright (C) 2019, Xudong Pan
 from download_data import download_data_main
-from scrape_data import Scrape_fiscal_data as get_fiscal, Scrape_gyakunipo as get_gyakunipo
+from tool import Scrape_fiscal_data as get_fiscal, Scrape_gyakunipo as get_gyakunipo
 from analysis import position_history_analysis, dryrun_analysis, watching_list_data_analysis
 from datetime import datetime
 import sys

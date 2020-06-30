@@ -1,7 +1,7 @@
 import openpyxl,sys, datetime
 import setting, os, pair_trade
 import pandas as pd
-from tool import pair_back_test
+from back_test import pair_back_test
 from util import fileutil as ft
 from dateutil.relativedelta import relativedelta
 
